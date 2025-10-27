@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - Fine Graphics</title>
+  <style>
+    /* Your existing CSS styles remain the same */
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      background: #f5f5f5; 
+    }
+    
+    header { 
+      background: #007bff; 
+      color: white; 
+      padding: 15px; 
+      text-align: center; 
+      font-size: 22px; 
+    }
+    
+    .container { 
+      max-width: 700px; 
+      margin: 30px auto; 
+      background: white; 
+      padding: 20px; 
+      border-radius: 10px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
+    }
+
+    .order-item {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+      padding: 15px 0;
+    }
+    
+    .order-item img {
+      width: 120px;
+      height: 120px;
+      border-radius: 10px;
+      margin-right: 20px;
+      object-fit: cover;
+    }
+    
+    .details { 
+      flex: 1; 
+    }
+    
+    .details h2 { 
+      margin: 5px 0; 
+      font-size: 20px; 
+    }
+    
+    .details p { 
+      margin: 5px 0; 
+      color: #333; 
+      font-size: 16px; 
+    }
+
+    .totalBox { 
+      text-align: right; 
+      font-size: 20px; 
+      font-weight: bold; 
+      margin-top: 15px; 
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .btn:hover {
+      background: #218838;
+    }
+    
+    .btn:disabled { 
+      background: gray; 
+      cursor: not-allowed; 
+    }
+    
+    .btn-secondary {
+      background: #007bff;
+    }
+    
+    .btn-secondary:hover {
+      background: #0056b3;
+    }
+
+    #qrcode { 
+      text-align: center; 
+      margin-top: 20px; 
+    }
+    
+    #qrcode img { 
+      max-width: 220px; 
+      border: 4px solid #007bff; 
+      border-radius: 12px; 
+    }
+
+    /* Success overlay */
+    #successBox {
+      display: none;
+      text-align: center;
+      padding: 30px;
+      margin-top: 20px;
+      background: #d4edda;
+      color: #155724;
+      border: 2px solid #c3e6cb;
+      border-radius: 10px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #007bff;
+      font-size: 16px;
+    }
+    
+    .error {
+      text-align: center;
+      padding: 20px;
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    
+    .upi-details {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      text-align: center;
+    }
+    
+    .upi-details h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    
+    .upi-details p {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Confirm Payment</header>
+
+  <div class="container" id="orderContainer">
+    <div class="loading">Loading your order...</div>
+  </div>
+  
+  <div class="container">
+    <div class="totalBox" id="grandTotal">Total: ₹0</div>
+    
+    <div class="upi-details">
+      <h3>💰 Payment Information</h3>
+      <p><strong>UPI ID:</strong> dharneeshdragons@okhdfcbank</p>
+      <p><strong>Payee Name:</strong> Fine Graphics</p>
+      <p><strong>Note:</strong> Orders will be saved in our secure database after payment</p>
+    </div>
+    
+    <button id="payBtn" class="btn">Generate QR Code & Pay</button>
+    <div id="qrcode"></div>
+    <button id="paidBtn" class="btn btn-secondary" style="display:none;">✅ I Have Paid - Save My Order</button>
+    <div id="successBox">✅ Payment Successful! Order Saved. Redirecting...</div>
+    
+    <!-- Debug section -->
+    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none;" id="debugSection">
+      <h3>🔧 Debug Information</h3>
+      <pre id="debugInfo"></pre>
+      <button onclick="testOrderSave()" class="btn" style="background: #ffc107; color: black;">Test Order Save</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script>
+    // Get current user from localStorage
+    let currentUser = null;
+    let checkout = null;
+    let total = 0;
+
+    // Initialize the payment page
+    function initPayment() {
+      try {
+        // Get current user
+        const userData = localStorage.getItem("currentUser");
+        if (!userData) {
+          showError("Please login first!");
+          setTimeout(() => window.location.href = "login.html", 2000);
+          return;
+        }
+
+        currentUser = JSON.parse(userData);
+        const username = currentUser.username || currentUser.email;
+        
+        if (!username) {
+          showError("Invalid user data. Please login again.");
+          setTimeout(() => window.location.href = "login.html", 2000);
+          return;
+        }
+
+        // Get checkout data
+        const checkoutKey = "checkout_" + username;
+        const checkoutData = localStorage.getItem(checkoutKey);
+        
+        if (!checkoutData) {
+          showError("No items found for checkout. Please add items to cart first.");
+          setTimeout(() => window.location.href = "index.html", 3000);
+          return;
+        }
+
+        checkout = JSON.parse(checkoutData);
+        
+        if (!checkout.items || checkout.items.length === 0) {
+          showError("No items in checkout. Please add items to cart first.");
+          setTimeout(() => window.location.href = "index.html", 3000);
+          return;
+        }
+
+        // Render order items
+        renderOrderItems();
+        setupEventListeners();
+
+        // Show debug section if needed
+        if (window.location.search.includes('debug')) {
+          document.getElementById('debugSection').style.display = 'block';
+          updateDebugInfo();
+        }
+
+      } catch (error) {
+        console.error("Initialization error:", error);
+        showError("Error loading payment page: " + error.message);
+      }
+    }
+
+    // Render order items in the container - UPDATED WITH CUSTOMIZATION DISPLAY
+    function renderOrderItems() {
+        const orderContainer = document.getElementById("orderContainer");
+        total = 0;
+
+        if (!checkout || !checkout.items || checkout.items.length === 0) {
+            orderContainer.innerHTML = "<div class='error'>No items found for payment.</div>";
+            document.getElementById("payBtn").disabled = true;
+            return;
+        }
+
+        let orderHTML = '<h2>📦 Your Order Summary</h2>';
+        checkout.items.forEach(item => {
+            const subtotal = item.price * item.quantity;
+            total += subtotal;
+            
+            // Check if item has customization
+            const hasCustomization = item.placement_position || item.custom_requirements;
+            
+            orderHTML += `
+                <div class="order-item">
+                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/120?text=Image+Not+Found'">
+                    <div class="details">
+                        <h2>${item.name}</h2>
+                        <p><strong>Price:</strong> ₹${item.price}</p>
+                        <p><strong>Quantity:</strong> ${item.quantity}</p>
+                        ${hasCustomization ? `
+                            <div style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #007bff;">
+                                <p style="margin: 2px 0; font-size: 14px;"><strong>Customization:</strong></p>
+                                ${item.placement_position ? `<p style="margin: 2px 0; font-size: 14px;">📍 ${item.design_side.toUpperCase()} - ${item.placement_position}</p>` : ''}
+                                ${(item.design_width > 0 && item.design_height > 0) ? `<p style="margin: 2px 0; font-size: 14px;">📏 ${item.design_width}cm × ${item.design_height}cm</p>` : ''}
+                                ${item.custom_requirements ? `<p style="margin: 2px 0; font-size: 14px;">📝 ${item.custom_requirements}</p>` : ''}
+                            </div>
+                        ` : ''}
+                        <p><strong>Subtotal:</strong> ₹${subtotal}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        orderContainer.innerHTML = orderHTML;
+        document.getElementById("grandTotal").textContent = "Total Amount: ₹" + total;
+        
+        // Update debug info
+        updateDebugInfo();
+    }
+
+    // Handle payment process
+    function handlePayment() {
+      if (!checkout || !currentUser) return;
+
+      const upiID = "dharneeshdragons@okhdfcbank";
+      const payeeName = "Fine Graphics";
+      const upiLink = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(payeeName)}&am=${total}&cu=INR`;
+
+      // Generate and display QR code
+      const qrContainer = document.getElementById("qrcode");
+      qrContainer.innerHTML = "<div class='loading'>Generating QR Code...</div>";
+
+      QRCode.toDataURL(upiLink, { 
+        width: 220,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      }, function (err, url) {
+        if (err) {
+          qrContainer.innerHTML = "<div class='error'>Failed to generate QR code</div>";
+          console.error("QR Code Error:", err);
+          return;
+        }
+
+        qrContainer.innerHTML = `
+          <h3>📱 Scan QR Code to Pay</h3>
+          <img src="${url}" alt="UPI Payment QR Code">
+          <p><strong>Amount:</strong> ₹${total}</p>
+        `;
+      });
+
+      // Show "I Have Paid" button
+      document.getElementById("paidBtn").style.display = "block";
+      document.getElementById("payBtn").style.display = "none";
+      
+      // Try to open UPI app (mobile devices)
+      setTimeout(() => {
+        window.location.href = upiLink;
+      }, 1000);
+    }
+
+    // FIXED: Handle order saving after payment - CORRECTED VERSION
+    // IMPROVED: Handle order saving after payment
+async function handleOrderSave() {
+    if (!checkout || !currentUser) {
+        showError("No order data found. Please try again.");
+        return;
+    }
+
+    const username = currentUser.username || currentUser.email;
+    const paidBtn = document.getElementById("paidBtn");
+    
+    // Disable button to prevent multiple clicks
+    paidBtn.disabled = true;
+    paidBtn.textContent = "💾 Saving Order to Database...";
+
+    try {
+        // Prepare order data for backend - INCLUDING CUSTOMIZATION FIELDS
+        const orderData = {
+            username: username,
+            items: checkout.items.map(item => ({
+                name: item.name || 'Unknown Design',
+                price: parseFloat(item.price) || 0,
+                quantity: parseInt(item.quantity) || 1,
+                image: item.image || 'https://via.placeholder.com/80',
+                // ADD CUSTOMIZATION FIELDS
+                placement_position: item.placement_position || '',
+                design_side: item.design_side || 'front',
+                design_width: parseInt(item.design_width) || 0,
+                design_height: parseInt(item.design_height) || 0,
+                custom_requirements: item.custom_requirements || ''
+            }))
+        };
+
+        console.log("🔄 Sending order to database:", orderData);
+
+        // First, fix the orders table structure
+        console.log("🔧 Fixing orders table structure...");
+        const fixResponse = await fetch("/admin/fix-orders-table", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json" 
+            }
+        });
+        
+        const fixResult = await fixResponse.json();
+        console.log("🔧 Fix table result:", fixResult);
+
+        // Send order to backend with error handling
+        const response = await fetch("/saveOrder", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        console.log("📡 Response status:", response.status);
+
+        const result = await response.json();
+        console.log("📦 Backend response:", result);
+        
+        if (result.success) {
+            // Order saved successfully to orders database
+            console.log("✅ Order saved successfully! Order ID:", result.order_id);
+            
+            const checkoutKey = "checkout_" + username;
+            localStorage.removeItem(checkoutKey); // Clear checkout data
+            
+            // Clear cart as well since order is confirmed
+            const cartKey = "cart_" + username;
+            localStorage.removeItem(cartKey);
+            
+            // Also clear cart from database
+            await clearCartFromDatabase(username);
+            
+            showSuccess();
+        } else {
+            throw new Error(result.message || "Failed to save order to database");
+        }
+    } catch (error) {
+        console.error("❌ Error saving order:", error);
+        showError("Failed to save order: " + error.message);
+        
+        // Re-enable button
+        paidBtn.disabled = false;
+        paidBtn.textContent = "🔄 Try Again - Save My Order";
+    }
+}
+
+    // Clear cart from database after successful order
+    async function clearCartFromDatabase(username) {
+        try {
+            const response = await fetch(`/clearCart/${username}`, {
+                method: 'POST'
+            });
+            const result = await response.json();
+            if (result.success) {
+                console.log("✅ Cart cleared from database after order");
+            } else {
+                console.warn("⚠ Could not clear cart from database:", result.message);
+            }
+        } catch (error) {
+            console.error("❌ Error clearing cart from database:", error);
+        }
+    }
+
+    // Show success message and redirect
+    function showSuccess() {
+      const successBox = document.getElementById("successBox");
+      successBox.style.display = "block";
+      successBox.innerHTML = `
+        ✅ <strong>Payment Successful!</strong><br>
+        📦 Your order has been saved to our database<br>
+        🔄 Redirecting to orders page...
+      `;
+      
+      // Hide other elements
+      document.getElementById("payBtn").style.display = "none";
+      document.getElementById("paidBtn").style.display = "none";
+      document.getElementById("qrcode").style.display = "none";
+      
+      // Redirect to orders page after delay
+      setTimeout(() => {
+        window.location.href = "orders.html";
+      }, 3000);
+    }
+
+    // Debug function to check what's in checkout data
+    function updateDebugInfo() {
+        const debugInfo = document.getElementById("debugInfo");
+        if (debugInfo) {
+            debugInfo.textContent = JSON.stringify({
+                currentUser: currentUser ? {
+                    username: currentUser.username,
+                    email: currentUser.email
+                } : null,
+                checkout: checkout ? {
+                    itemsCount: checkout.items ? checkout.items.length : 0,
+                    total: total,
+                    sampleItem: checkout.items && checkout.items[0] ? {
+                        name: checkout.items[0].name,
+                        price: checkout.items[0].price,
+                        quantity: checkout.items[0].quantity,
+                        placement_position: checkout.items[0].placement_position,
+                        custom_requirements: checkout.items[0].custom_requirements
+                    } : null
+                } : null
+            }, null, 2);
+        }
+    }
+
+    // Test order save function
+    async function testOrderSave() {
+        if (!currentUser) {
+            alert("Please login first");
+            return;
+        }
+
+        const username = currentUser.username || currentUser.email;
+        
+        const testOrderData = {
+            username: username,
+            items: [
+                {
+                    name: "Test Design - Debug",
+                    price: 50.00,
+                    quantity: 1,
+                    image: "https://via.placeholder.com/80",
+                    placement_position: "MIDDLE",
+                    design_side: "front",
+                    design_width: 10,
+                    design_height: 10,
+                    custom_requirements: "Test order from debug button"
+                }
+            ]
+        };
+
+        try {
+            const paidBtn = document.getElementById("paidBtn");
+            paidBtn.disabled = true;
+            paidBtn.textContent = "🧪 Testing Order Save...";
+
+            console.log("🧪 Testing order save:", testOrderData);
+
+            const response = await fetch("/saveOrder", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json" 
+                },
+                body: JSON.stringify(testOrderData)
+            });
+
+            const result = await response.json();
+            console.log("🧪 Test order response:", result);
+
+            if (result.success) {
+                alert(`✅ Test order saved successfully!\nOrder ID: ${result.order_id}\nCheck orders page to verify.`);
+            } else {
+                alert(`❌ Test order failed: ${result.message}`);
+            }
+        } catch (error) {
+            console.error("❌ Test order error:", error);
+            alert("Test order failed: " + error.message);
+        } finally {
+            const paidBtn = document.getElementById("paidBtn");
+            paidBtn.disabled = false;
+            paidBtn.textContent = "✅ I Have Paid - Save My Order";
+        }
+    }
+
+    function setupEventListeners() {
+      const payBtn = document.getElementById("payBtn");
+      const paidBtn = document.getElementById("paidBtn");
+
+      if (payBtn) {
+        payBtn.addEventListener("click", handlePayment);
+      }
+
+      if (paidBtn) {
+        paidBtn.addEventListener("click", handleOrderSave);
+      }
+    }
+
+    // Show error message
+    function showError(message) {
+      const orderContainer = document.getElementById("orderContainer");
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error';
+      errorDiv.innerHTML = `
+        <strong>❌ Error:</strong> ${message}
+        <br><br>
+        <button onclick="window.location.href='index.html'" class="btn" style="background: #dc3545; margin: 5px;">🏠 Return to Home</button>
+        <button onclick="location.reload()" class="btn" style="background: #ffc107; color: black; margin: 5px;">🔄 Try Again</button>
+      `;
+      orderContainer.appendChild(errorDiv);
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initPayment);
+  </script>
+
+</body>
+</html>

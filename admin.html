@@ -1,0 +1,3829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Fine Graphics</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    /* Header */
+    .admin-header {
+      background: linear-gradient(135deg, #343a40, #495057);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-header h1 {
+      font-size: 24px;
+    }
+
+    .admin-nav {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .logout-btn {
+      background: #dc3545;
+    }
+
+    .logout-btn:hover {
+      background: #c82333;
+    }
+
+    .user-info {
+      color: #ffc107;
+      font-weight: bold;
+    }
+
+    /* Customer Details Layout - UPDATED */
+    .customer-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail-item {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 3px solid #007bff;
+    }
+
+    /* Add this to your CSS */
+    .detail-item[style*="grid-column: 1 / -1"] {
+      grid-column: 1 / -1;
+    }
+
+    .detail-item label {
+      font-weight: bold;
+      color: #495057;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-item div {
+      color: #343a40;
+      font-size: 14px;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    /* Multiple Image Upload Styles */
+    .multiple-image-upload {
+      margin-bottom: 15px;
+    }
+
+    .image-preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .image-preview-item {
+      position: relative;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 5px;
+      background: white;
+    }
+
+    .image-preview-item img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .remove-image-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-image-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Tags Input Styles */
+    .tags-input-container {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 8px;
+      background: white;
+      min-height: 44px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .tag-item {
+      background: #007bff;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 15px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tag-remove {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .tags-input {
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      padding: 5px;
+    }
+
+    .tags-input::placeholder {
+      color: #6c757d;
+    }
+
+    /* Design Card Updates */
+    .design-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .design-tag {
+      background: #e9ecef;
+      color: #495057;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+    }
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.design-image-gallery {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+    .main-design-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .main-design-image:hover {
+      transform: scale(1.02);
+    }
+
+    .design-thumbnails {
+      display: flex;
+      gap: 5px;
+      margin-top: 8px;
+      overflow-x: auto;
+    }
+
+    .design-thumbnail {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .design-thumbnail.active {
+      border-color: #007bff;
+    }
+
+    /* Search and Filter Styles */
+    .design-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      min-width: 250px;
+      
+    }
+    @keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+    .detail-item label {
+      font-weight: bold;
+      color: #495057;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-item div {
+      color: #343a40;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    /* Make address span full width */
+    .detail-item[style*="grid-column: 1 / -1"] {
+      grid-column: 1 / -1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .customer-details {
+        grid-template-columns: 1fr;
+      }
+      
+      .detail-item[style*="grid-column: 1 / -1"] {
+        grid-column: 1;
+      }
+    }
+    /* Main Layout */
+    .admin-container {
+      display: flex;
+      min-height: calc(100vh - 70px);
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+      width: 250px;
+      background: white;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      padding: 20px 0;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .menu-item {
+      padding: 15px 25px;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .menu-item:hover {
+      background: #f8f9fa;
+      border-left-color: #007bff;
+    }
+
+    .menu-item.active {
+      background: #e3f2fd;
+      border-left-color: #007bff;
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    /* Main Content */
+    .admin-main {
+      flex: 1;
+      padding: 30px;
+      background: #f8f9fa;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+/* Enhanced Full Screen Image Modal */
+.full-image-modal .modal-content {
+    max-width: 95vw;
+    max-height: 95vh;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 0;
+    position: relative;
+}
+
+.full-image-modal .modal-header {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-bottom: 1px solid #333;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1002;
+}
+
+.full-image-modal .close-btn {
+    color: white;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.full-image-container {
+    text-align: center;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(95vh - 80px);
+}
+
+.full-size-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Image navigation styles */
+.image-navigation {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+.nav-button {
+    pointer-events: all;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.nav-button:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+
+.nav-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+#imageCounter {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 1001;
+}
+
+.stat-card {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      border-left: 4px solid #007bff;
+    }
+
+    .stat-card h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .stat-card .number {
+      font-size: 32px;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    /* Content Sections */
+    .content-section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 25px;
+      margin-bottom: 25px;
+      display: none;
+    }
+
+    .content-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f8f9fa;
+    }
+
+    .section-header h2 {
+      color: #343a40;
+    }
+    /* Order Actions */
+.order-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.status-select {
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-ordered { background: #e2e3e5; color: #383d41; }
+.status-pending { background: #fff3cd; color: #856404; }
+.status-processing { background: #cce7ff; color: #004085; }
+.status-completed { background: #d4edda; color: #155724; }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e9ecef;
+    }
+.metric-change.positive {
+  color: #28a745;
+}
+
+.metric-change.negative {
+  color: #dc3545;
+}
+
+.analytics-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.chart-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.data-section {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.metric-box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: bold;
+  color: #495057;
+}
+
+    .data-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 2px;
+      font-size: 12px;
+    }
+
+    .edit-btn {
+      background: #ffc107;
+      color: black;
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .view-btn {
+      background: #17a2b8;
+      color: white;
+    }
+
+    .customer-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-processing { background: #cce7ff; color: #004085; }
+    .status-ordered { background: #e2e3e5; color: #383d41; }
+
+    /* Design Cards */
+    .designs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .design-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .design-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .design-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .design-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #343a40;
+      margin-bottom: 5px;
+    }
+
+    .design-category {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .design-price {
+      color: #007bff;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .design-description {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 15px;
+    }
+
+    .design-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Customer Details Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .customer-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail-item {
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+
+    .detail-item label {
+      font-weight: bold;
+      color: #495057;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    /* Order Items */
+    .order-items {
+      margin-top: 20px;
+    }
+
+    .order-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #f8f9fa;
+    }
+
+    .order-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-right: 15px;
+    }
+
+    .order-item-details {
+      flex: 1;
+    }
+
+    .order-item-details h4 {
+      margin: 0 0 5px 0;
+      color: #343a40;
+    }
+
+    .order-item-details p {
+      margin: 2px 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .error {
+      text-align: center;
+      padding: 20px;
+      color: #dc3545;
+      background: #f8d7da;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+
+    /* Order Actions */
+    .order-actions {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .status-select {
+      padding: 6px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    /* Customer Orders Section */
+    .customer-orders {
+      margin-top: 20px;
+    }
+
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .orders-table th,
+    .orders-table td {
+      padding: 10px;
+      border: 1px solid #e9ecef;
+      text-align: left;
+    }
+
+    .orders-table th {
+      background: #f8f9fa;
+      font-weight: bold;
+    }
+.customization-info {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    background: #f8f9fa !important;
+    border-left: 3px solid #667eea !important;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+}
+
+.customization-info div {
+    margin-bottom: 2px;
+}
+
+.custom-notes {
+    background: #e9ecef;
+    padding: 4px 6px;
+    border-radius: 3px;
+    border-left: 3px solid #667eea;
+    font-style: italic;
+}
+
+.no-customization {
+    color: #6c757d;
+    font-style: italic;
+}
+    /* Login Required */
+    .login-required {
+      text-align: center;
+      padding: 50px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .login-required h2 {
+      color: #dc3545;
+      margin-bottom: 20px;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #495057;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .admin-container {
+        flex-direction: column;
+      }
+
+      .admin-sidebar {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .customer-details {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .order-item {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .order-item img {
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+
+      .designs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Enhanced Image View Styles */
+    .design-image-container {
+      position: relative;
+      cursor: pointer;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .design-image-container:hover .main-design-image {
+      transform: scale(1.02);
+    }
+
+    .image-view-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .design-image-container:hover .image-view-overlay {
+      opacity: 1;
+    }
+
+    .view-image-text {
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      background: rgba(0,123,255,0.8);
+      padding: 8px 16px;
+      border-radius: 20px;
+    }
+
+    /* Full Screen Image Modal */
+    .full-image-modal .modal-content {
+      max-width: 95vw;
+      max-height: 95vh;
+      background: black;
+      padding: 0;
+    }
+
+    .full-image-modal .modal-header {
+      background: black;
+      color: white;
+      border-bottom: 1px solid #333;
+      margin-bottom: 0;
+    }
+
+    .full-image-modal .close-btn {
+      color: white;
+    }
+
+    .full-image-container {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .full-size-image {
+      max-width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+    }
+
+    /* Preview Gallery Styles */
+    .preview-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .preview-gallery-item {
+      position: relative;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .preview-gallery-item:hover {
+      border-color: #007bff;
+      transform: translateY(-2px);
+    }
+
+    .preview-gallery-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="admin-header">
+    <h1>👑 Fine Graphics - Admin Panel</h1>
+    <div class="admin-nav">
+      <span class="user-info" id="adminUserInfo">Admin User</span>
+      <button class="nav-btn" onclick="refreshData()">🔄 Refresh</button>
+      <button class="nav-btn logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <nav class="admin-sidebar">
+      <ul class="sidebar-menu">
+        <li class="menu-item active" data-section="dashboard">
+          📊 Dashboard
+        </li>
+        <li class="menu-item" data-section="orders">
+          📦 Orders Management
+        </li>
+        <li class="menu-item" data-section="customers">
+          👥 Customer Management
+        </li>
+        <li class="menu-item" data-section="designs">
+          🎨 Design Management
+        </li>
+        <li class="menu-item" data-section="analytics">
+          📈 Sales Analytics
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Login Required Message -->
+      <div id="loginRequired" class="login-required" style="display: none;">
+        <h2>🔒 Admin Access Required</h2>
+        <p>You need to login as an administrator to access this panel.</p>
+        <button class="nav-btn" onclick="goToAdminLogin()" style="margin-top: 20px;">🔑 Go to Admin Login</button>
+      </div>
+
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="content-section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Customers</h3>
+            <div class="number" id="totalUsers">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Orders</h3>
+            <div class="number" id="totalOrders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Pending Orders</h3>
+            <div class="number" id="pendingOrders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="number" id="totalRevenue">₹0</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <h2>Recent Orders</h2>
+        </div>
+        <div id="recentOrders" class="loading">
+          Loading recent orders...
+        </div>
+      </section>
+
+      <!-- Orders Management Section -->
+      <section id="orders" class="content-section">
+        <div class="section-header">
+          <h2>📦 Orders Management</h2>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="statusFilter" onchange="filterOrders()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
+              <option value="all">📋 All Orders</option>
+              <option value="Pending">⏳ Pending</option>
+              <option value="Processing">🔄 Processing</option>
+              <option value="Completed">✅ Completed</option>
+              <option value="Ordered">📥 Ordered</option>
+            </select>
+            <button class="nav-btn" onclick="loadOrdersData()" style="background: #17a2b8;">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Orders Summary Cards -->
+        <div class="orders-summary-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+          <div class="summary-card" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">0</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Orders</div>
+          </div>
+          <div class="summary-card" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">0</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Completed</div>
+          </div>
+          <div class="summary-card" style="background: linear-gradient(135deg, #ffc107, #e0a800); color: black; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">0</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Pending</div>
+          </div>
+          <div class="summary-card" style="background: linear-gradient(135deg, #6c757d, #545b62); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">₹0</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Revenue</div>
+          </div>
+        </div>
+
+        <div id="ordersTableContainer" class="loading">
+          Loading orders data...
+        </div>
+      </section>
+
+      <!-- Customer Management Section -->
+      <section id="customers" class="content-section">
+        <div class="section-header">
+          <h2>👥 Customer Management</h2>
+        </div>
+        <div id="customersTableContainer" class="loading">
+          Loading customers data...
+        </div>
+      </section>
+
+      <!-- Design Management Section -->
+      <section id="designs" class="content-section">
+        <div class="section-header">
+          <h2>🎨 Design Management</h2>
+          <div>
+            <input 
+              type="text" 
+              id="designSearch" 
+              placeholder="🔍 Search by name or tags..." 
+              style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; width: 250px; margin-right: 10px;"
+              onkeyup="searchDesigns()"
+            >
+            <button class="nav-btn" onclick="showAddDesignModal()">➕ Add New Design</button>
+          </div>
+        </div>
+        <div id="designsTableContainer" class="loading">
+          Loading designs data...
+        </div>
+      </section>
+
+      <!-- Analytics Section -->
+      <section id="analytics" class="content-section">
+        <div class="section-header">
+          <h2>📈 Sales Analytics</h2>
+        </div>
+        <div id="analyticsContent" class="loading">
+          Loading analytics data...
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Customer Details Modal -->
+  <div id="customerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>👤 Customer Details & Orders</h3>
+        <button class="close-btn" onclick="closeModal('customerModal')">&times;</button>
+      </div>
+      <div id="customerDetailsContent">
+        <!-- Customer details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Orders Modal -->
+  <div id="customerOrdersModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📦 Customer Orders</h3>
+        <button class="close-btn" onclick="closeModal('customerOrdersModal')">&times;</button>
+      </div>
+      <div id="customerOrdersContent">
+        <!-- Customer orders will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Design Modal -->
+  <div id="designModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 id="designModalTitle">🎨 Add New Design</h3>
+        <button class="close-btn" onclick="closeModal('designModal')">&times;</button>
+      </div>
+      <div id="designModalContent">
+        <form id="designForm" onsubmit="saveDesign(event)">
+          <div style="display: grid; gap: 20px;">
+            <!-- Basic Information -->
+            <div class="form-group">
+              <label for="designName">Design Name *</label>
+              <input type="text" id="designName" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="designPrice">Price (₹) *</label>
+              <input type="number" id="designPrice" class="form-control" step="0.01" min="0" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="designDescription">Description *</label>
+              <textarea id="designDescription" class="form-control" rows="3" placeholder="Describe the design..." required></textarea>
+            </div>
+            
+            <!-- Single Image Upload -->
+            <div class="form-group">
+              <label>Main Design Image *</label>
+              <div class="multiple-image-upload">
+                <input type="file" id="designImages" class="form-control" accept="image/*" onchange="handleImageSelection(this)" required>
+                <small style="color: #666;">Select the main image for the design card.</small>
+                
+                <div id="imagePreviewContainer" class="image-preview-container">
+                  <!-- Main image preview will be added here -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview Images Section -->
+            <!-- Preview Images Section -->
+<div class="form-group">
+  <label>Preview Images (Optional)</label>
+  <div class="multiple-image-upload">
+    <input type="file" id="previewImages" class="form-control" accept="image/*" multiple onchange="handlePreviewImageSelection(this)">
+    <small style="color: #666;">Add multiple preview images for customers to view. These will be shown in a gallery.</small>
+    
+    <!-- ADD THE CLEAR ALL BUTTON RIGHT HERE -->
+    <button type="button" class="nav-btn" onclick="clearAllPreviewImages()" 
+            style="background: #dc3545; margin-top: 5px; padding: 5px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+      🗑️ Clear All Preview Images
+    </button>
+    
+    <div id="previewImagesContainer" class="image-preview-container">
+      <!-- Preview images will be added here -->
+    </div>
+  </div>
+</div>
+            
+            <!-- Tags Input -->
+            <div class="form-group">
+              <label for="designTags">Tags</label>
+              <div class="tags-input-container">
+                <div id="tagsContainer">
+                  <!-- Tags will be added here -->
+                </div>
+                <input 
+                  type="text" 
+                  id="designTagsInput" 
+                  class="tags-input" 
+                  placeholder="Type tag and press Enter..."
+                  onkeydown="handleTagInput(event)"
+                >
+              </div>
+              <small style="color: #666;">Add tags for search (e.g., modern, business, wedding)</small>
+            </div>
+            
+            <!-- Form Actions -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid #e9ecef; padding-top: 20px;">
+              <button type="button" class="nav-btn" onclick="closeModal('designModal')" style="background: #6c757d;">
+                Cancel
+              </button>
+              <button type="submit" class="nav-btn" style="background: #28a745;">
+                💾 Save Design
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Screen Image View Modal -->
+  <div id="imageViewModal" class="modal full-image-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color: white;">🎨 Design Image</h3>
+        <button class="close-btn" onclick="closeModal('imageViewModal')" style="color: white;">&times;</button>
+      </div>
+      <div class="full-image-container">
+        <img id="fullSizeImage" src="" alt="Full size design" class="full-size-image">
+      </div>
+    </div>
+  </div>
+
+  <!-- Design Preview Gallery Modal -->
+  <div id="designPreviewModal" class="modal">
+    <div class="modal-content" style="max-width: 90vw; max-height: 90vh;">
+      <div class="modal-header">
+        <h3>🎨 Design Preview Gallery</h3>
+        <button class="close-btn" onclick="closeModal('designPreviewModal')">&times;</button>
+      </div>
+      <div id="designPreviewContent" style="padding: 20px;">
+        <!-- Preview content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is admin (using separate adminUser storage)
+    function checkAdminAccess() {
+      const adminUser = JSON.parse(localStorage.getItem("adminUser") || "{}");
+      console.log("🔍 Checking admin access:", adminUser);
+      
+      if (!adminUser.username || adminUser.username !== "admin") {
+        console.log("❌ Admin access denied");
+        // Show login required message and hide content
+        document.getElementById('loginRequired').style.display = 'block';
+        document.querySelectorAll('.content-section').forEach(section => {
+          section.style.display = 'none';
+        });
+        document.querySelector('.admin-sidebar').style.display = 'none';
+        return false;
+      }
+      
+      console.log("✅ Admin access granted");
+      // Hide login required message and show content
+      document.getElementById('loginRequired').style.display = 'none';
+      document.querySelector('.admin-sidebar').style.display = 'block';
+      return true;
+    }
+
+    // Set admin user info
+    function setAdminInfo() {
+      const adminUser = JSON.parse(localStorage.getItem("adminUser") || "{}");
+      console.log("👤 Setting admin info:", adminUser);
+      document.getElementById("adminUserInfo").textContent = 
+        `${adminUser.full_name || 'Admin User'} (${adminUser.role || 'Admin'})`;
+    }
+
+    // Navigation
+    function setupNavigation() {
+      const menuItems = document.querySelectorAll('.menu-item');
+      const contentSections = document.querySelectorAll('.content-section');
+
+      menuItems.forEach(item => {
+        item.addEventListener('click', () => {
+          // Remove active class from all
+          menuItems.forEach(i => i.classList.remove('active'));
+          contentSections.forEach(s => s.classList.remove('active'));
+
+          // Add active class to clicked
+          item.classList.add('active');
+          const sectionId = item.getAttribute('data-section');
+          document.getElementById(sectionId).classList.add('active');
+
+          // Load section data
+          loadSectionData(sectionId);
+        });
+      });
+    }
+
+    // Design Management Variables
+    let currentEditingDesignId = null;
+    let selectedImages = [];
+    let designTags = [];
+    let selectedPreviewImages = [];
+    // Global variables for image navigation
+let currentDesignImages = [];
+let currentImageIndex = 0;
+let currentDesignName = '';
+    // Enhanced Image Viewing Functions
+    // Enhanced Image Viewing with Navigation
+// Enhanced Image Viewing with Navigation
+function viewFullImage(imageSrc, designName, designId = null) {
+    console.log("🖼️ Opening image viewer:", designName, "Design ID:", designId);
+    
+    currentDesignName = designName;
+    currentImageIndex = 0;
+    currentDesignImages = [imageSrc]; // Start with main image
+    
+    // If designId is provided, we'll load preview images
+    if (designId) {
+        loadPreviewImages(designId);
+    } else {
+        // Just show the single image
+        showImageInModal();
+    }
+}
+// Load preview images for a design
+async function loadPreviewImages(designId) {
+    try {
+        console.log("📸 Loading preview images for design:", designId);
+        const response = await fetch(`/admin/designs/${designId}/previews`);
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch preview images');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.previews && result.previews.length > 0) {
+            // Add preview images to the array
+            result.previews.forEach(preview => {
+                const previewSrc = `data:${preview.preview_type};base64,${preview.preview_data}`;
+                currentDesignImages.push(previewSrc);
+            });
+            console.log(`✅ Loaded ${result.previews.length} preview images`);
+        } else {
+            console.log("ℹ️ No preview images found for this design");
+        }
+    } catch (error) {
+        console.error('❌ Error loading preview images:', error);
+        // Continue with just the main image if previews fail to load
+    } finally {
+        showImageInModal();
+    }
+}
+// Show image in modal with navigation
+function showImageInModal() {
+    const fullSizeImage = document.getElementById('fullSizeImage');
+    if (!fullSizeImage) {
+        console.error("❌ Full size image element not found!");
+        return;
+    }
+    
+    fullSizeImage.src = currentDesignImages[currentImageIndex];
+    fullSizeImage.alt = currentDesignName;
+    
+    // Create or update modal structure for navigation
+    updateModalStructure();
+    
+    // Update navigation buttons
+    updateNavigationButtons();
+    
+    openModal('imageViewModal');
+}
+// Update modal structure with navigation controls
+function updateModalStructure() {
+    const modalHeader = document.querySelector('#imageViewModal .modal-header');
+    if (!modalHeader) return;
+    
+    // Add navigation controls if they don't exist
+    if (!document.querySelector('.image-navigation')) {
+        const navigationHTML = `
+            <div class="image-navigation" style="position: absolute; top: 50%; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 20px; pointer-events: none; z-index: 1001;">
+                <button class="nav-button prev" onclick="navigateImage(-1)" 
+                        style="pointer-events: all; background: rgba(0,0,0,0.7); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    ‹
+                </button>
+                <button class="nav-button next" onclick="navigateImage(1)" 
+                        style="pointer-events: all; background: rgba(0,0,0,0.7); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    ›
+                </button>
+            </div>
+            <div id="imageCounter" style="position: absolute; top: 70px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; z-index: 1001;">
+                ${currentImageIndex + 1} / ${currentDesignImages.length}
+            </div>
+        `;
+        
+        modalHeader.insertAdjacentHTML('afterend', navigationHTML);
+    } else {
+        // Update counter if it exists
+        const counter = document.getElementById('imageCounter');
+        if (counter) {
+            counter.textContent = `${currentImageIndex + 1} / ${currentDesignImages.length}`;
+        }
+    }
+}
+// Navigate between images
+function navigateImage(direction) {
+    currentImageIndex += direction;
+    
+    // Ensure index stays within bounds
+    if (currentImageIndex < 0) {
+        currentImageIndex = 0;
+    } else if (currentImageIndex >= currentDesignImages.length) {
+        currentImageIndex = currentDesignImages.length - 1;
+    }
+    
+    // Update image
+    const fullSizeImage = document.getElementById('fullSizeImage');
+    fullSizeImage.src = currentDesignImages[currentImageIndex];
+    
+    // Update counter and buttons
+    updateNavigationButtons();
+    
+    // Update counter display
+    const counter = document.getElementById('imageCounter');
+    if (counter) {
+        counter.textContent = `${currentImageIndex + 1} / ${currentDesignImages.length}`;
+    }
+}
+// Update navigation buttons
+function updateNavigationButtons() {
+    const prevButton = document.querySelector('.nav-button.prev');
+    const nextButton = document.querySelector('.nav-button.next');
+    
+    if (!prevButton || !nextButton) return;
+    
+    // Show/hide buttons based on image count
+    if (currentDesignImages.length <= 1) {
+        prevButton.style.display = 'none';
+        nextButton.style.display = 'none';
+    } else {
+        prevButton.style.display = 'flex';
+        nextButton.style.display = 'flex';
+        
+        // Disable buttons when at boundaries
+        prevButton.disabled = currentImageIndex === 0;
+        nextButton.disabled = currentImageIndex === currentDesignImages.length - 1;
+        
+        // Visual feedback for disabled state
+        prevButton.style.opacity = currentImageIndex === 0 ? '0.5' : '1';
+        nextButton.style.opacity = currentImageIndex === currentDesignImages.length - 1 ? '0.5' : '1';
+        prevButton.style.cursor = currentImageIndex === 0 ? 'not-allowed' : 'pointer';
+        nextButton.style.cursor = currentImageIndex === currentDesignImages.length - 1 ? 'not-allowed' : 'pointer';
+    }
+}
+
+// Update image counter
+function updateImageCounter() {
+    const counter = document.getElementById('imageCounter');
+    counter.textContent = `${currentImageIndex + 1} / ${currentDesignImages.length}`;
+}
+
+// Update navigation buttons
+function updateNavigationButtons() {
+    const prevButton = document.querySelector('.nav-button.prev');
+    const nextButton = document.querySelector('.nav-button.next');
+    
+    // Disable buttons when at boundaries
+    prevButton.disabled = currentImageIndex === 0;
+    nextButton.disabled = currentImageIndex === currentDesignImages.length - 1;
+    
+    // Hide buttons if only one image
+    if (currentDesignImages.length <= 1) {
+        prevButton.style.display = 'none';
+        nextButton.style.display = 'none';
+    } else {
+        prevButton.style.display = 'flex';
+        nextButton.style.display = 'flex';
+    }
+}
+
+    // Enhanced Preview Gallery Function
+    async function viewDesignPreviews(designId) {
+      try {
+        const response = await fetch(`/admin/designs/${designId}/previews`);
+        const result = await response.json();
+        
+        if (result.success) {
+          let previewsHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h4>Design Preview Gallery</h4>
+              <p>${result.previews.length} preview image(s) available</p>
+            </div>
+          `;
+          
+          if (result.previews.length === 0) {
+            previewsHTML += `
+              <div style="text-align: center; padding: 40px; color: #666;">
+                <p>No preview images available</p>
+                <small>Add preview images in the design editor</small>
+              </div>
+            `;
+          } else {
+            previewsHTML += `
+              <div class="preview-gallery">
+            `;
+            
+            result.previews.forEach((preview, index) => {
+              const imageSrc = `data:${preview.preview_type};base64,${preview.preview_data}`;
+              previewsHTML += `
+                <div class="preview-gallery-item" onclick="viewFullImage('${imageSrc}', 'Preview ${index + 1}')">
+                  <img src="${imageSrc}" alt="Preview ${index + 1}">
+                  <div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">
+                    Preview ${index + 1}
+                  </div>
+                </div>
+              `;
+            });
+            
+            previewsHTML += `</div>`;
+          }
+          
+          document.getElementById('designPreviewContent').innerHTML = previewsHTML;
+          openModal('designPreviewModal');
+        } else {
+          alert('Error loading preview images: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error loading preview images:', error);
+        alert('Error loading preview images: ' + error.message);
+      }
+    }
+
+    // Handle preview image selection
+    // Handle preview image selection - ENHANCED VERSION
+function handlePreviewImageSelection(input) {
+    console.log("🖼️ Handling preview image selection...");
+    
+    if (!input.files || input.files.length === 0) {
+        console.log("No preview files selected");
+        return;
+    }
+    
+    // Convert FileList to Array
+    const files = Array.from(input.files);
+    
+    files.forEach(file => {
+        // Basic validation
+        if (!file.type.startsWith('image/')) {
+            alert('Please select image files only (JPG, PNG, etc.)');
+            return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB');
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const imageData = {
+                id: Date.now() + Math.random(), // Unique ID
+                file: file,
+                dataUrl: e.target.result,
+                name: file.name,
+                isNew: true // Flag to identify new uploads
+            };
+            
+            selectedPreviewImages.push(imageData);
+            updatePreviewImagesDisplay();
+            console.log("Preview image ready for upload:", file.name);
+        };
+        
+        reader.onerror = function(error) {
+            console.error("Error reading preview file:", error);
+            alert('Error reading image file');
+        };
+        
+        reader.readAsDataURL(file);
+    });
+}
+
+    // Update preview images display
+    function updatePreviewImagesDisplay() {
+      const container = document.getElementById('previewImagesContainer');
+      
+      if (!container) {
+        console.error("Preview images container not found!");
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      if (selectedPreviewImages.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: #666; border: 2px dashed #ddd; border-radius: 8px; grid-column: 1 / -1;">
+            <p>No preview images selected</p>
+            <small>Add multiple preview images for customers to browse</small>
+          </div>
+        `;
+        return;
+      }
+      
+      selectedPreviewImages.forEach((image, index) => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'image-preview-item';
+        previewItem.innerHTML = `
+          <img src="${image.dataUrl}" alt="Preview ${index + 1}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px;">
+          <button type="button" class="remove-image-btn" onclick="removePreviewImage(${image.id})">&times;</button>
+          <div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">
+            Preview ${index + 1}
+          </div>
+        `;
+        container.appendChild(previewItem);
+      });
+    }
+
+    // Remove preview image
+    // Remove preview image - FIXED VERSION
+function removePreviewImage(imageId) {
+    // Remove from the selectedPreviewImages array
+    selectedPreviewImages = selectedPreviewImages.filter(img => img.id !== imageId);
+    updatePreviewImagesDisplay();
+    
+    // Clear the file input for preview images
+    document.getElementById('previewImages').value = '';
+    
+    console.log(`🗑️ Removed preview image ID: ${imageId}, remaining: ${selectedPreviewImages.length}`);
+}
+
+// Handle preview image selection - ENHANCED VERSION
+function handlePreviewImageSelection(input) {
+    console.log("🖼️ Handling preview image selection...");
+    
+    if (!input.files || input.files.length === 0) {
+        console.log("No preview files selected");
+        return;
+    }
+    
+    // Clear existing selection if we're adding new files
+    if (input.files.length > 0) {
+        selectedPreviewImages = [];
+    }
+    
+    // Convert FileList to Array
+    const files = Array.from(input.files);
+    
+    files.forEach(file => {
+        // Basic validation
+        if (!file.type.startsWith('image/')) {
+            alert('Please select image files only (JPG, PNG, etc.)');
+            return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB');
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const imageData = {
+                id: Date.now() + Math.random(), // Unique ID
+                file: file,
+                dataUrl: e.target.result,
+                name: file.name,
+                isNew: true // Flag to identify new uploads
+            };
+            
+            selectedPreviewImages.push(imageData);
+            updatePreviewImagesDisplay();
+            console.log("Preview image ready for upload:", file.name);
+        };
+        
+        reader.onerror = function(error) {
+            console.error("Error reading preview file:", error);
+            alert('Error reading image file');
+        };
+        
+        reader.readAsDataURL(file);
+    });
+}
+
+// Update preview images display - ENHANCED VERSION
+function updatePreviewImagesDisplay() {
+    const container = document.getElementById('previewImagesContainer');
+    
+    if (!container) {
+        console.error("Preview images container not found!");
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    if (selectedPreviewImages.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #666; border: 2px dashed #ddd; border-radius: 8px; grid-column: 1 / -1;">
+                <p>No preview images selected</p>
+                <small>Add multiple preview images for customers to browse</small>
+            </div>
+        `;
+        return;
+    }
+    
+    selectedPreviewImages.forEach((image, index) => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'image-preview-item';
+        previewItem.innerHTML = `
+            <img src="${image.dataUrl}" alt="Preview ${index + 1}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px;">
+            <button type="button" class="remove-image-btn" onclick="removePreviewImage(${image.id})" title="Remove this preview image">&times;</button>
+            <div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">
+                Preview ${index + 1}
+            </div>
+        `;
+        container.appendChild(previewItem);
+    });
+    
+    console.log(`🖼️ Displaying ${selectedPreviewImages.length} preview images`);
+}
+
+    // Single Image Handling
+    function handleImageSelection(input) {
+      console.log("🖼️ Handling image selection...");
+      
+      if (!input.files || input.files.length === 0) {
+        console.log("No file selected");
+        return;
+      }
+      
+      const file = input.files[0];
+      console.log("File selected:", file.name, file.type, file.size);
+      
+      // Basic validation
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (JPG, PNG, etc.)');
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        console.log("File read successfully");
+        
+        // Create simple image object
+        const imageData = {
+          id: Date.now(),
+          file: file,
+          dataUrl: e.target.result,
+          name: file.name
+        };
+        
+        // Only keep one image
+        selectedImages = [imageData];
+        
+        // Show preview
+        updateImagePreviews();
+        
+        console.log("Image ready for upload");
+      };
+      
+      reader.onerror = function(error) {
+        console.error("Error reading file:", error);
+        alert('Error reading image file');
+      };
+      
+      reader.readAsDataURL(file);
+    }
+
+    // Update image previews
+    function updateImagePreviews() {
+      const container = document.getElementById('imagePreviewContainer');
+      
+      if (!container) {
+        console.error("Preview container not found!");
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      if (selectedImages.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: #666; border: 2px dashed #ddd; border-radius: 8px;">
+            <p>No image selected</p>
+            <small>Select one image for the design</small>
+          </div>
+        `;
+        return;
+      }
+      
+      selectedImages.forEach(image => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'image-preview-item';
+        previewItem.innerHTML = `
+          <img src="${image.dataUrl}" alt="Preview" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+          <button type="button" class="remove-image-btn" onclick="removeImage(${image.id})">&times;</button>
+        `;
+        container.appendChild(previewItem);
+      });
+    }
+
+    // Remove image
+    function removeImage(imageId) {
+      selectedImages = selectedImages.filter(img => img.id !== imageId);
+      updateImagePreviews();
+    }
+
+    // Tags Handling
+    function handleTagInput(event) {
+      if (event.key === 'Enter' || event.key === ',') {
+        event.preventDefault();
+        const input = event.target;
+        const tag = input.value.trim().replace(',', '');
+        
+        if (tag && !designTags.includes(tag)) {
+          designTags.push(tag);
+          updateTagsDisplay();
+          input.value = '';
+        }
+      }
+    }
+
+    function updateTagsDisplay() {
+      const tagsContainer = document.getElementById('tagsContainer');
+      tagsContainer.innerHTML = '';
+      
+      designTags.forEach((tag, index) => {
+        const tagElement = document.createElement('div');
+        tagElement.className = 'tag-item';
+        tagElement.innerHTML = `
+          ${tag}
+          <button type="button" class="tag-remove" onclick="removeTag(${index})">&times;</button>
+        `;
+        tagsContainer.appendChild(tagElement);
+      });
+    }
+
+    function removeTag(index) {
+      designTags.splice(index, 1);
+      updateTagsDisplay();
+    }
+
+    // Show Add Design Modal
+    function showAddDesignModal() {
+      currentEditingDesignId = null;
+      selectedImages = [];
+      selectedPreviewImages = [];
+      designTags = [];
+      
+      // Reset form
+      document.getElementById('designForm').reset();
+      document.getElementById('designModalTitle').textContent = '🎨 Add New Design';
+      document.getElementById('tagsContainer').innerHTML = '';
+      
+      // Reset image preview
+      updateImagePreviews();
+      updatePreviewImagesDisplay();
+      
+      openModal('designModal');
+    }
+
+    // Save Design with Single Image
+    // Save Design with Single Image - ENHANCED VERSION
+// Save Design with Single Image - UPDATED TO HANDLE PREVIEW DELETION
+async function saveDesign(event) {
+    event.preventDefault();
+    console.log("💾 Starting design save...");
+    
+    // Get form data
+    const name = document.getElementById('designName').value.trim();
+    const price = document.getElementById('designPrice').value;
+    const description = document.getElementById('designDescription').value.trim();
+    const tags = designTags.join(',');
+    
+    // Basic validation
+    if (!name || !price || !description) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    if (selectedImages.length === 0 && !currentEditingDesignId) {
+        alert('Please select an image for the design');
+        return;
+    }
+    
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '⏳ Saving...';
+    submitBtn.disabled = true;
+    
+    try {
+        // Prepare image data
+        let imagesData = [];
+        if (selectedImages.length > 0) {
+            const image = selectedImages[0];
+            
+            // Convert to base64 string (remove data URL prefix)
+            const base64Data = image.dataUrl.split(',')[1];
+            
+            imagesData.push({
+                image_data: base64Data,
+                image_type: image.file.type || 'image/jpeg'
+            });
+            
+            console.log("Image prepared:", image.name, "Size:", base64Data.length);
+        }
+        
+        // Create payload - include design ID if editing
+        const payload = {
+            name: name,
+            price: parseFloat(price),
+            description: description,
+            tags: tags,
+            images: imagesData
+        };
+        
+        // Add design ID if we're editing an existing design
+        if (currentEditingDesignId) {
+            payload.id = currentEditingDesignId;
+            
+            // Handle preview images deletion
+            if (window.deleteAllPreviews) {
+                payload.delete_all_previews = true;
+                console.log("🗑️ Marking all previews for deletion");
+            }
+        }
+        
+        console.log("Sending payload to server:", payload);
+        
+        // Send to server
+        const response = await fetch('/admin/save-design', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        console.log("Server response:", result);
+        
+        if (result.success) {
+            const designId = result.design_id || currentEditingDesignId;
+            
+            // Save preview images if we have any AND we're not deleting all
+            if (selectedPreviewImages.length > 0 && !window.deleteAllPreviews) {
+                await savePreviewImages(designId);
+            } else {
+                console.log("ℹ️ No preview images to save or all previews marked for deletion");
+            }
+            
+            // Reset deletion flags
+            window.deleteAllPreviews = false;
+            if (window.existingPreviewIdsToDelete) {
+                window.existingPreviewIdsToDelete = [];
+            }
+            
+            const action = currentEditingDesignId ? 'updated' : 'saved';
+            alert(`✅ Design ${action} successfully!`);
+            closeModal('designModal');
+            loadDesignsData();
+        } else {
+            throw new Error(result.message || 'Failed to save design');
+        }
+        
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('❌ Error: ' + error.message);
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+// Clear all preview images
+// Clear all preview images - FIXED VERSION
+// Clear all preview images - FIXED VERSION
+// Clear all preview images - ENHANCED VERSION
+function clearAllPreviewImages() {
+    if (selectedPreviewImages.length === 0) {
+        console.log("ℹ️ No preview images to clear");
+        showNotification("No preview images to clear", "info");
+        return;
+    }
+    
+    const imageCount = selectedPreviewImages.length;
+    
+    if (confirm(`Are you sure you want to remove all ${imageCount} preview images?`)) {
+        // Clear ALL preview images - both new uploads and existing ones
+        selectedPreviewImages = [];
+        
+        // Also clear any stored existing preview IDs that need to be deleted
+        if (window.existingPreviewIdsToDelete) {
+            window.existingPreviewIdsToDelete = [];
+        }
+        
+        // Mark that we want to delete all existing previews when saving
+        window.deleteAllPreviews = true;
+        
+        // Clear the file input
+        const previewInput = document.getElementById('previewImages');
+        if (previewInput) {
+            previewInput.value = '';
+        }
+        
+        // Update the display
+        updatePreviewImagesDisplay();
+        
+        console.log("🗑️ All preview images cleared - including existing ones");
+        
+        // Show success message
+        showNotification(`All ${imageCount} preview images cleared`, 'success');
+    }
+}
+
+// Save preview images separately
+async function savePreviewImages(designId) {
+  try {
+    // Save new preview images
+    const newPreviews = selectedPreviewImages.filter(img => img.isNew);
+        
+        for (const preview of newPreviews) {
+          const base64Data = preview.dataUrl.split(',')[1];
+          
+          await fetch(`/admin/designs/${designId}/previews`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              preview_data: base64Data,
+              preview_type: preview.file.type || 'image/jpeg'
+            })
+          });
+        }
+        
+        console.log(`✅ Saved ${newPreviews.length} preview images`);
+      } catch (error) {
+        console.error('Error saving preview images:', error);
+        throw error;
+      }
+    }
+
+    // Edit Design with Single Image
+    // Edit Design with Single Image - UPDATED
+async function editDesign(designId) {
+  try {
+    console.log(`✏️ Loading design for editing: ${designId}`);
+    const response = await fetch('/admin/designs');
+    const result = await response.json();
+
+    if (result.success) {
+      const design = result.designs.find(d => d.id === designId);
+      if (design) {
+        currentEditingDesignId = designId;
+        selectedImages = [];
+        selectedPreviewImages = []; // Reset preview images
+        designTags = design.tags ? design.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        // Reset deletion flags
+        window.deleteAllPreviews = false;
+        if (window.existingPreviewIdsToDelete) {
+            window.existingPreviewIdsToDelete = [];
+        }
+        
+        // Update form fields
+        document.getElementById('designModalTitle').textContent = '✏️ Edit Design';
+        document.getElementById('designName').value = design.name || '';
+        document.getElementById('designPrice').value = design.price || '';
+        document.getElementById('designDescription').value = design.description || '';
+        
+        // Update tags display
+        updateTagsDisplay();
+        
+        // Show existing main image
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        previewContainer.innerHTML = '';
+        
+        if (design.images && design.images.length > 0) {
+          const image = design.images[0];
+          previewContainer.innerHTML = `
+            <div class="image-preview-item">
+              <img src="data:${image.type};base64,${image.data}" alt="Existing design image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+              <div style="position: absolute; top: -8px; right: -8px; background: #6c757d; color: white; border-radius: 4px; padding: 2px 6px; font-size: 10px;">
+                Main Image
+              </div>
+            </div>
+          `;
+        }
+        
+        // Load preview images
+        await loadDesignPreviews(designId);
+        
+        // Image not required for editing
+        document.getElementById('designImages').required = false;
+        
+        openModal('designModal');
+      } else {
+        alert('❌ Design not found');
+      }
+    } else {
+      alert('❌ Error loading design: ' + result.message);
+    }
+  } catch (error) {
+    console.error('💥 Error in editDesign:', error);
+    alert('❌ Error loading design for editing: ' + error.message);
+  }
+}
+
+    // Load existing preview images when editing
+    async function loadDesignPreviews(designId) {
+      try {
+        const response = await fetch(`/admin/designs/${designId}/previews`);
+        const result = await response.json();
+        
+        if (result.success) {
+          // Convert existing previews to our format
+          selectedPreviewImages = result.previews.map(preview => ({
+            id: preview.id,
+            dataUrl: `data:${preview.preview_type};base64,${preview.preview_data}`,
+            name: `Preview ${preview.id}`,
+            isNew: false, // Existing previews from database
+            dbId: preview.id
+          }));
+          
+          updatePreviewImagesDisplay();
+        }
+      } catch (error) {
+        console.error('Error loading preview images:', error);
+      }
+    }
+
+    // Load Designs with Single Image
+    async function loadDesignsData() {
+      try {
+        const container = document.getElementById('designsTableContainer');
+        container.innerHTML = '<div class="loading">Loading designs...</div>';
+
+        const response = await fetch('/admin/designs');
+        const result = await response.json();
+
+        if (result.success) {
+          const designs = result.designs || [];
+          window.allDesigns = designs; // Store for search functionality
+
+        if (designs.length === 0) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 40px; color: #666;">
+                <h3>🎨 No Designs Found</h3>
+                <p>Get started by adding your first design!</p>
+                <button class="nav-btn" onclick="showAddDesignModal()" style="margin-top: 10px;">➕ Add First Design</button>
+              </div>
+            `;
+            return;
+          }
+
+          renderDesignsGrid(designs);
+        } else {
+          container.innerHTML = `<div class="error">Error loading designs: ${result.message}</div>`;
+        }
+      } catch (error) {
+        console.error('Error loading designs:', error);
+        document.getElementById('designsTableContainer').innerHTML = `
+          <div class="error">
+            <h3>🚨 Error Loading Designs</h3>
+            <p>${error.message}</p>
+            <button class="nav-btn" onclick="loadDesignsData()" style="margin-top: 10px;">🔄 Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Enhanced Design Card Rendering with Image Viewing
+    // Enhanced Design Card Rendering with Image Viewing and Preview Indicator
+function renderDesignsGrid(designs) {
+    const searchTerm = document.getElementById('designSearch')?.value || '';
+    const isSearching = searchTerm.trim() !== '';
+    
+    let designsHTML = `
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>${isSearching ? `Search Results: ${designs.length} design(s) found` : `Total Designs: ${designs.length}`}</strong>
+            </div>
+            <div>
+                <button class="nav-btn" onclick="showAddDesignModal()">➕ Add New Design</button>
+            </div>
+        </div>
+    `;
+
+    if (designs.length === 0) {
+        designsHTML += `
+            <div style="text-align: center; padding: 60px 20px; color: #666;">
+                <div style="font-size: 64px; margin-bottom: 20px;">🎨</div>
+                <h3 style="margin-bottom: 10px; color: #495057;">No Designs Found</h3>
+                <p style="margin-bottom: 25px; color: #6c757d;">
+                    ${isSearching ? 'No designs match your search criteria.' : 'Get started by adding your first design!'}
+                </p>
+                ${!isSearching ? `
+                    <button class="nav-btn" onclick="showAddDesignModal()" style="background: #28a745; padding: 12px 24px;">
+                        ➕ Add Your First Design
+                    </button>
+                ` : `
+                    <button class="nav-btn" onclick="clearDesignSearch()" style="background: #17a2b8;">
+                        🔄 Clear Search
+                    </button>
+                `}
+            </div>
+        `;
+        
+        document.getElementById('designsTableContainer').innerHTML = designsHTML;
+        return;
+    }
+
+    designsHTML += `<div class="designs-grid">`;
+
+    designs.forEach(design => {
+        const mainImage = design.images && design.images.length > 0 ? 
+            `data:${design.images[0].type};base64,${design.images[0].data}` : 
+            'https://via.placeholder.com/300x200?text=No+Image';
+        
+        // Generate tags HTML
+        let tagsHTML = '';
+        if (design.tags) {
+            const tagList = design.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+            if (tagList.length > 0) {
+                tagsHTML = `
+                    <div class="design-tags">
+                        ${tagList.map(tag => `<span class="design-tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // Check if design has preview images
+        const hasPreviews = design.preview_count > 0;
+
+        designsHTML += `
+            <div class="design-card" data-design-id="${design.id}">
+                <div class="design-image-container" onclick="viewFullImage('${mainImage}', '${design.name.replace(/'/g, "\\'")}', ${design.id})">
+                    <img src="${mainImage}" alt="${design.name}" class="main-design-image">
+                    <div class="image-view-overlay">
+                        <div class="view-image-text">
+                            🔍 Click to View 
+                            ${hasPreviews ? `<br><small>+ ${design.preview_count} preview images</small>` : ''}
+                        </div>
+                    </div>
+                    ${hasPreviews ? `
+                        <div class="preview-indicator">
+                            📸 ${design.preview_count} Previews
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="design-name">${design.name}</div>
+                <div class="design-price">₹${design.price}</div>
+                ${tagsHTML}
+                <div class="design-description">${design.description || 'No description provided'}</div>
+                <div class="design-actions">
+                    <button class="action-btn edit-btn" onclick="editDesign(${design.id})">✏️ Edit</button>
+                    <button class="action-btn delete-btn" onclick="deleteDesign(${design.id})">🗑️ Delete</button>
+                </div>
+            </div>
+        `;
+    });
+
+    designsHTML += `</div>`;
+    document.getElementById('designsTableContainer').innerHTML = designsHTML;
+}
+    // Delete Design
+    async function deleteDesign(designId) {
+      if (confirm('Are you sure you want to delete this design? This action cannot be undone.')) {
+        try {
+          const response = await fetch(`/admin/designs/${designId}`, { 
+            method: 'DELETE' 
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            alert('✅ Design deleted successfully');
+            loadDesignsData();
+          } else {
+            alert('❌ Error: ' + result.message);
+          }
+        } catch (error) {
+          alert('❌ Error deleting design: ' + error.message);
+        }
+      }
+    }
+
+    // Search Designs
+    function searchDesigns() {
+      const searchTerm = document.getElementById('designSearch').value.toLowerCase();
+      const designs = window.allDesigns || [];
+      
+      if (!searchTerm) {
+        // If search is empty, show all designs
+        renderDesignsGrid(designs);
+        return;
+      }
+      
+      const filteredDesigns = designs.filter(design => {
+        const nameMatch = design.name.toLowerCase().includes(searchTerm);
+        const tagsMatch = design.tags && design.tags.toLowerCase().includes(searchTerm);
+        const descriptionMatch = design.description && design.description.toLowerCase().includes(searchTerm);
+        
+        return nameMatch || tagsMatch || descriptionMatch;
+      });
+      
+      renderDesignsGrid(filteredDesigns);
+    }
+
+    // Clear Design Search
+    function clearDesignSearch() {
+      document.getElementById('designSearch').value = '';
+      const designs = window.allDesigns || [];
+      renderDesignsGrid(designs);
+    }
+
+    // Load data for specific section
+    async function loadSectionData(section) {
+      if (!checkAdminAccess()) return;
+      
+      switch(section) {
+        case 'dashboard':
+          await loadDashboardData();
+          break;
+        case 'customers':
+          await loadCustomersData();
+          break;
+        case 'orders':
+          await loadOrdersData();
+          break;
+        case 'designs':
+          await loadDesignsData();
+          break;
+        case 'analytics':
+          await loadAnalyticsData();
+          break;
+      }
+    }
+
+    // Dashboard Data
+    async function loadDashboardData() {
+      try {
+        console.log("📊 Loading dashboard data...");
+        const content = document.getElementById('recentOrders');
+        content.innerHTML = '<div class="loading">Loading dashboard...</div>';
+
+        // Fetch admin stats from the dedicated endpoint
+        const statsResponse = await fetch('/admin/stats');
+        const statsData = await statsResponse.json();
+
+        if (statsData.success) {
+          const stats = statsData.stats;
+          
+          // Update the stats cards with real data
+          document.getElementById('totalUsers').textContent = stats.total_users || 0;
+          document.getElementById('totalOrders').textContent = stats.total_orders || 0;
+          document.getElementById('pendingOrders').textContent = stats.pending_orders || 0;
+          document.getElementById('totalRevenue').textContent = `₹${(stats.total_revenue || 0).toFixed(2)}`;
+
+          console.log("📊 Dashboard stats updated:", stats);
+        } else {
+          console.error("❌ Failed to load stats:", statsData.message);
+          // Set default values if stats fail
+          document.getElementById('totalUsers').textContent = '0';
+          document.getElementById('totalOrders').textContent = '0';
+          document.getElementById('pendingOrders').textContent = '0';
+          document.getElementById('totalRevenue').textContent = '₹0';
+        }
+
+        // Load recent orders for the dashboard
+        await loadRecentOrders();
+
+      } catch (error) {
+        console.error('❌ Error loading dashboard:', error);
+        document.getElementById('recentOrders').innerHTML = '<div class="error">Error loading dashboard data</div>';
+        
+        // Set default values on error
+        document.getElementById('totalUsers').textContent = '0';
+        document.getElementById('totalOrders').textContent = '0';
+        document.getElementById('pendingOrders').textContent = '0';
+        document.getElementById('totalRevenue').textContent = '₹0';
+      }
+    }
+
+    // Load recent orders for dashboard display - ENHANCED WITH CUSTOMIZATION
+    async function loadRecentOrders() {
+      try {
+        const content = document.getElementById('recentOrders');
+        content.innerHTML = '<div class="loading">🔄 Loading recent orders...</div>';
+        
+        const response = await fetch('/admin/orders');
+        const result = await response.json();
+
+        if (result.success && result.orders.length > 0) {
+          const recentOrders = result.orders.slice(0, 8); // Show last 8 orders
+          
+          let ordersHTML = `
+            <div style="overflow-x: auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Design</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+
+          recentOrders.forEach(order => {
+            const total = (order.price || 0) * (order.quantity || 1);
+            const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString() : 'N/A';
+            
+            // Check for customization
+            const hasCustomization = order.placement_position || 
+                                   order.design_side !== 'front' || 
+                                   order.design_width > 0;
+            
+            ordersHTML += `
+              <tr>
+                <td><strong>#${order.id}</strong></td>
+                <td>${order.username || 'Unknown User'}</td>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <img src="${order.image_url || 'https://via.placeholder.com/40'}" 
+                         alt="${order.design_name}" 
+                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                    <div>
+                      <div style="font-weight: bold;">${order.design_name || 'Unknown Design'}</div>
+                      ${hasCustomization ? `
+                        <div style="font-size: 10px; color: #666; margin-top: 2px;">
+                          📍 ${order.placement_position || ''} 
+                          ${order.design_side ? `• ${order.design_side.toUpperCase()}` : ''}
+                          ${order.design_width > 0 ? `• ${order.design_width}cm` : ''}
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+                </td>
+                <td><strong>₹${total.toFixed(2)}</strong></td>
+                <td>${orderDate}</td>
+                <td>
+                  <span class="status-badge status-${order.status?.toLowerCase() || 'pending'}">
+                    ${order.status || 'Pending'}
+                  </span>
+                </td>
+              </tr>
+            `;
+          });
+
+          ordersHTML += `
+                </tbody>
+              </table>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+              <button class="nav-btn" onclick="loadSectionData('orders')">📦 View All Orders</button>
+            </div>
+          `;
+
+          content.innerHTML = ordersHTML;
+        } else {
+          content.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+              <h3>📭 No Recent Orders</h3>
+              <p>No orders have been placed yet.</p>
+              <button class="nav-btn" onclick="loadOrdersData()" style="margin-top: 10px;">Refresh Orders</button>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading recent orders:', error);
+        document.getElementById('recentOrders').innerHTML = `
+          <div class="error">
+            <h3>❌ Error Loading Orders</h3>
+            <p>${error.message}</p>
+            <button class="nav-btn" onclick="loadDashboardData()" style="margin-top: 10px;">Try Again</button>
+          </div>
+        `;
+      }
+    }
+
+    // Orders Management - ENHANCED WITH CUSTOMIZATION DETAILS
+    async function loadOrdersData() {
+      try {
+        console.log("📦 Loading orders data...");
+        const container = document.getElementById('ordersTableContainer');
+        container.innerHTML = '<div class="loading">🔄 Loading orders data...</div>';
+
+        const response = await fetch('/admin/orders');
+        const result = await response.json();
+
+        if (result.success) {
+          const orders = result.orders || [];
+          const statusFilter = document.getElementById('statusFilter').value;
+
+          // Filter orders based on status
+          let filteredOrders = orders;
+          if (statusFilter !== 'all') {
+            filteredOrders = orders.filter(order => order.status === statusFilter);
+          }
+
+          console.log(`Found ${orders.length} orders, ${filteredOrders.length} after filtering`);
+
+          // Update summary cards
+          updateOrdersSummary(orders);
+
+          if (filteredOrders.length === 0) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 60px 20px; color: #666;">
+                <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
+                <h3 style="margin-bottom: 10px; color: #495057;">No Orders Found</h3>
+                <p style="margin-bottom: 20px; color: #6c757d;">No orders match your current filter criteria.</p>
+                <button class="nav-btn" onclick="document.getElementById('statusFilter').value='all'; loadOrdersData();" 
+                        style="background: #007bff;">
+                  📋 Show All Orders
+                </button>
+              </div>
+            `;
+            return;
+          }
+
+          // Build orders table with improved UI - ENHANCED WITH CUSTOMIZATION DETAILS
+          let ordersHTML = `
+            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <strong style="color: #495057; font-size: 16px;">📊 Showing ${filteredOrders.length} order(s)</strong>
+              </div>
+              <div style="color: #6c757d; font-size: 14px;">
+                Filtered by: <strong>${statusFilter === 'all' ? 'All Orders' : statusFilter}</strong>
+              </div>
+            </div>
+            <div class="orders-grid" style="display: grid; gap: 20px;">
+          `;
+
+          filteredOrders.forEach(order => {
+            const total = (order.price || 0) * (order.quantity || 1);
+            const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN') : 'N/A';
+            const statusClass = `status-${(order.status || 'pending').toLowerCase()}`;
+            
+            ordersHTML += `
+              <div class="order-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+                  <!-- Order Image -->
+                  <div style="flex-shrink: 0;">
+                    <img src="${order.image_url || 'https://via.placeholder.com/80'}" 
+                         alt="${order.design_name}" 
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef; cursor: pointer;"
+                         onclick="viewFullImage('${order.image_url || 'https://via.placeholder.com/80'}', '${order.design_name.replace(/'/g, "\\'")}')">
+                  </div>
+                  
+                  <!-- Order Details -->
+                  <div style="flex: 1;">
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 15px;">
+                      <div>
+                        <h4 style="margin: 0 0 5px 0; color: #343a40; font-size: 16px;">
+                          ${order.design_name || 'Unknown Design'}
+                        </h4>
+                        <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                          👤 <strong>${order.username || 'Unknown Customer'}</strong>
+                        </p>
+                        
+                        <!-- CUSTOMIZATION DETAILS - ALWAYS SHOW -->
+                        <div class="customization-info">
+                          <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 4px;">
+                            🎨 Customization Details
+                          </div>
+                          
+                          <!-- Placement Position & Side -->
+                          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 4px;">
+                            <div style="font-size: 11px; color: #666;">
+                              <strong>Position:</strong> ${order.placement_position || 'Not specified'}
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                              <strong>Side:</strong> ${order.design_side ? order.design_side.toUpperCase() : 'FRONT'}
+                            </div>
+                          </div>
+                          
+                          <!-- Size -->
+                          ${(order.design_width > 0 && order.design_height > 0) ? `
+                            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                              <strong>Size:</strong> ${order.design_width}cm × ${order.design_height}cm
+                            </div>
+                          ` : ''}
+                          
+                          <!-- Custom Requirements -->
+                          ${order.custom_requirements ? `
+                            <div style="font-size: 11px; color: #666;">
+                              <strong>Requirements:</strong> ${order.custom_requirements}
+                            </div>
+                          ` : `
+                            <div style="font-size: 11px; color: #999; font-style: italic;">
+                              No special requirements
+                            </div>
+                          `}
+                        </div>
+                      </div>
+                      <div style="text-align: right;">
+                        <div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">
+                          ₹${total.toFixed(2)}
+                        </div>
+                        <div style="font-size: 12px; color: #6c757d;">
+                          ${orderDate}
+                        </div>
+                        <div style="font-size: 11px; color: #999; margin-top: 5px;">
+                          Qty: ${order.quantity || 1}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Status and Actions -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <select class="status-select" onchange="updateOrderStatus(${order.id}, this.value)" 
+                                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 12px;">
+                          <option value="Ordered" ${order.status === 'Ordered' ? 'selected' : ''}>📥 Ordered</option>
+                          <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                          <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>🔄 Processing</option>
+                          <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
+                        </select>
+                        <span class="status-badge ${statusClass}" style="font-size: 11px;">
+                          ${order.status || 'Pending'}
+                        </span>
+                      </div>
+                      
+                      <div style="display: flex; gap: 8px;">
+                        <button class="action-btn view-btn" onclick="viewCustomerOrders('${order.username}')" 
+                                style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                          👤 View Orders
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})" 
+                                style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+
+          ordersHTML += `</div>`; // Close orders-grid
+
+          container.innerHTML = ordersHTML;
+        } else {
+          container.innerHTML = `
+            <div class="error" style="text-align: center; padding: 40px; background: #f8d7da; color: #721c24; border-radius: 8px;">
+              <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+              <h3 style="margin-bottom: 10px;">Error Loading Orders</h3>
+              <p style="margin-bottom: 20px;">${result.message || 'Unknown error occurred'}</p>
+              <button class="nav-btn" onclick="loadOrdersData()" style="background: #dc3545;">
+                🔄 Try Again
+              </button>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Orders load error:', error);
+        document.getElementById('ordersTableContainer').innerHTML = `
+          <div class="error" style="text-align: center; padding: 40px; background: #f8d7da; color: #721c24; border-radius: 8px;">
+            <div style="font-size: 48px; margin-bottom: 15px;">🚨</div>
+            <h3 style="margin-bottom: 10px;">Network Error</h3>
+            <p style="margin-bottom: 20px;">Failed to load orders: ${error.message}</p>
+            <button class="nav-btn" onclick="loadOrdersData()" style="background: #dc3545;">
+              🔄 Retry
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // Update orders summary cards
+    function updateOrdersSummary(orders) {
+      const totalOrders = orders.length;
+      const completedOrders = orders.filter(o => o.status === 'Completed').length;
+      const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+      
+      // Calculate total revenue from completed orders
+      const totalRevenue = orders
+        .filter(o => o.status === 'Completed')
+        .reduce((sum, order) => sum + (order.price * (order.quantity || 1)), 0);
+
+      // Update summary cards
+      const summaryCards = document.querySelector('.orders-summary-cards');
+      if (summaryCards) {
+        summaryCards.innerHTML = `
+          <div class="summary-card" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">${totalOrders}</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Orders</div>
+          </div>
+          <div class="summary-card" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">${completedOrders}</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Completed</div>
+          </div>
+          <div class="summary-card" style="background: linear-gradient(135deg, #ffc107, #e0a800); color: black; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">${pendingOrders}</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Pending</div>
+          </div>
+          <div class="summary-card" style="background: linear-gradient(135deg, #6c757d, #545b62); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">₹${totalRevenue.toFixed(2)}</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Revenue</div>
+          </div>
+        `;
+      }
+    }
+
+    // Customer Management
+    async function loadCustomersData() {
+      try {
+        const container = document.getElementById('customersTableContainer');
+        container.innerHTML = '<div class="loading">Loading customers data...</div>';
+
+        const response = await fetch('/admin/users');
+        const result = await response.json();
+
+        console.log("📋 Customers API Response:", result);
+
+        if (result.success && result.users && result.users.length > 0) {
+          // Store users globally for search functionality
+          window.allCustomers = result.users;
+
+          let customersHTML = `
+            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <strong>Total Customers: ${result.users.length}</strong>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input 
+                  type="text" 
+                  id="customerSearch" 
+                  placeholder="🔍 Search by username..." 
+                  style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; width: 250px;"
+                  onkeyup="searchCustomers()"
+                >
+                <button class="nav-btn" onclick="clearSearch()" style="background: #6c757d;">
+                  🗑️ Clear
+                </button>
+              </div>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Username</th>
+                    <th>Mobile</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTableBody">
+          `;
+
+          result.users.forEach(user => {
+            console.log("👤 Processing user:", user);
+            
+            customersHTML += `
+              <tr>
+                <td>${user.id || 'N/A'}</td>
+                <td><strong>${user.fname || ''} ${user.lname || ''}</strong></td>
+                <td>${user.email || 'N/A'}</td>
+                <td>${user.username || 'N/A'}</td>
+                <td>${user.mobile || 'N/A'}</td>
+                <td>
+                  <button class="action-btn view-btn" onclick="viewCustomerOrders('${user.username || ''}')">
+                    📦 View Orders
+                  </button>
+                  <button class="action-btn customer-btn" onclick="viewCustomerDetails('${user.username || ''}')" style="margin-top: 5px;">
+                    👤 View Profile
+                  </button>
+                </td>
+              </tr>
+            `;
+          });
+
+          customersHTML += `
+                </tbody>
+              </table>
+            </div>
+          `;
+          
+          container.innerHTML = customersHTML;
+        } else {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+              <h3>👥 No Customers Found</h3>
+              <p>${result.message || 'No customer data available'}</p>
+              <button class="nav-btn" onclick="loadCustomersData()" style="margin-top: 10px;">🔄 Try Again</button>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('❌ Error loading customers:', error);
+        document.getElementById('customersTableContainer').innerHTML = `
+          <div class="error">
+            <h3>🚨 Error Loading Customers</h3>
+            <p>${error.message}</p>
+            <button class="nav-btn" onclick="loadCustomersData()" style="margin-top: 10px;">🔄 Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Update order status
+    async function updateOrderStatus(orderId, newStatus) {
+      try {
+        console.log(`🔄 Updating order ${orderId} status to: ${newStatus}`);
+        
+        const response = await fetch(`/admin/orders/${orderId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          console.log(`✅ Order ${orderId} status updated to: ${newStatus}`);
+          showNotification(`Order status updated to ${newStatus}`, 'success');
+          loadOrdersData();
+        } else {
+          showNotification('Failed to update order status: ' + result.message, 'error');
+          loadOrdersData();
+        }
+      } catch (error) {
+        console.error('❌ Error updating order status:', error);
+        showNotification('Error updating order status: ' + error.message, 'error');
+        loadOrdersData();
+      }
+    }
+
+    // Delete order
+    async function deleteOrder(orderId) {
+      if (confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+        try {
+          const response = await fetch(`/admin/orders/${orderId}`, {
+            method: 'DELETE'
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            showNotification('Order deleted successfully', 'success');
+            loadOrdersData();
+          } else {
+            showNotification('Failed to delete order: ' + result.message, 'error');
+          }
+        } catch (error) {
+          console.error('❌ Error deleting order:', error);
+          showNotification('Error deleting order: ' + error.message, 'error');
+        }
+      }
+    }
+
+    // Filter orders by status
+    function filterOrders() {
+      loadOrdersData();
+    }
+
+    // Notification function
+    // Notification function
+function showNotification(message, type = 'info') {
+    // Remove any existing notifications first
+    const existingNotifications = document.querySelectorAll('.custom-notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = 'custom-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = '#28a745';
+    } else if (type === 'error') {
+        notification.style.background = '#dc3545';
+    } else if (type === 'warning') {
+        notification.style.background = '#ffc107';
+        notification.style.color = '#000';
+    } else {
+        notification.style.background = '#17a2b8';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 3000);
+}
+
+// View Customer Details - UPDATED WITH PASSWORD
+async function viewCustomerDetails(username) {
+  try {
+    console.log("🔍 Fetching customer details for:", username);
+
+    let userData = null;
+    
+    // Try stored customers first
+    if (window.allCustomers && window.allCustomers.length > 0) {
+      userData = window.allCustomers.find(user => user.username === username);
+    }
+    
+    // If not found, try API call
+    if (!userData) {
+      const usersResponse = await fetch('/admin/users');
+      const usersResult = await usersResponse.json();
+      
+      if (usersResult.success && usersResult.users) {
+        userData = usersResult.users.find(user => user.username === username);
+      }
+    }
+
+    if (!userData) {
+      throw new Error(`Customer "${username}" not found in the system.`);
+    }
+
+    console.log("✅ User data found:", userData);
+
+    // Create detailed HTML for customer information WITH PASSWORD
+    const customerHTML = `
+      <div class="customer-details">
+        <div class="detail-item">
+          <label>Customer ID</label>
+          <div>#${userData.id || 'N/A'}</div>
+        </div>
+        <div class="detail-item">
+          <label>Full Name</label>
+          <div><strong>${userData.fname || ''} ${userData.lname || ''}</strong></div>
+        </div>
+        <div class="detail-item">
+          <label>Email Address</label>
+          <div>${userData.email || 'N/A'}</div>
+        </div>
+        <div class="detail-item">
+          <label>Username</label>
+          <div>${userData.username || 'N/A'}</div>
+        </div>
+        <div class="detail-item">
+          <label>Password</label>
+          <div style="font-family: monospace; background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+            ${userData.password || 'N/A'}
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>Mobile Number</label>
+          <div>${userData.mobile || 'N/A'}</div>
+        </div>
+        <div class="detail-item" style="grid-column: 1 / -1;">
+          <label>Address</label>
+          <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #e9ecef; min-height: 20px;">
+            ${userData.address || 'Not provided by customer'}
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>District</label>
+          <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+            ${userData.district || 'Not provided'}
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>Profile Picture</label>
+          <div>
+            ${userData.profile_pic ? 
+              `<img src="${userData.profile_pic}" alt="Profile" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid #007bff;">` : 
+              'No profile picture'
+            }
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>Account Created</label>
+          <div>${userData.created_at ? new Date(userData.created_at).toLocaleDateString() : 'N/A'}</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <button class="nav-btn customer-btn" onclick="viewCustomerOrders('${username}')">
+          📦 View Customer Orders
+        </button>
+        <button class="nav-btn" onclick="closeModal('customerModal')" style="background: #6c757d; margin-left: 10px;">
+          Close
+        </button>
+      </div>
+    `;
+
+    // Update modal content
+    document.getElementById('customerDetailsContent').innerHTML = customerHTML;
+    
+    // Show the modal
+    openModal('customerModal');
+    
+  } catch (error) {
+    console.error('❌ Error loading customer details:', error);
+    
+    document.getElementById('customerDetailsContent').innerHTML = `
+      <div class="error" style="text-align: center; padding: 40px;">
+        <h3>❌ Unable to Load Customer Details</h3>
+        <p>${error.message}</p>
+        <div style="margin-top: 15px;">
+          <button class="nav-btn" onclick="closeModal('customerModal')">
+            Close
+          </button>
+          <button class="nav-btn" onclick="loadCustomersData(); closeModal('customerModal');" style="background: #17a2b8;">
+            🔄 Refresh Data
+          </button>
+        </div>
+      </div>
+    `;
+    
+    openModal('customerModal');
+  }
+}
+
+    // View Customer Orders - REDIRECT TO NEW PAGE
+    // Enhanced Customer Orders View with Customization
+async function viewCustomerOrders(username) {
+    try {
+        console.log("📦 Loading customer orders for:", username);
+        
+        const response = await fetch(`/getOrders/${username}`);
+        const result = await response.json();
+
+        if (result.success) {
+            const orders = result.orders || [];
+            
+            let ordersHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h4>📦 Orders for ${username}</h4>
+                    <p style="color: #666; margin-bottom: 15px;">Total orders: ${orders.length}</p>
+                </div>
+            `;
+
+            if (orders.length === 0) {
+                ordersHTML += `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
+                        <h3>No Orders Found</h3>
+                        <p>This customer hasn't placed any orders yet.</p>
+                    </div>
+                `;
+            } else {
+                orders.forEach(order => {
+                    ordersHTML += `
+                        <div class="order-card" style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <div>
+                                    <h4 style="margin: 0 0 5px 0; color: #343a40;">Order #${order.order_id || order.id}</h4>
+                                    <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                                        📅 ${order.date || 'Date not available'} 
+                                        | Status: <span class="status-badge status-${order.status?.toLowerCase() || 'pending'}">${order.status || 'Pending'}</span>
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #28a745;">
+                                        ₹${order.total?.toFixed(2) || '0.00'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="order-items">
+                    `;
+
+                    // Display each item in the order
+                    order.items.forEach(item => {
+                        ordersHTML += `
+                            <div class="order-item" style="display: flex; align-items: flex-start; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 10px; background: #f8f9fa;">
+                                <img src="${item.image || 'https://via.placeholder.com/80'}" 
+                                     alt="${item.name}" 
+                                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; margin-right: 15px; cursor: pointer;"
+                                     onclick="viewFullImage('${item.image || 'https://via.placeholder.com/80'}', '${item.name.replace(/'/g, "\\'")}')">
+                                <div style="flex: 1;">
+                                    <h5 style="margin: 0 0 8px 0; color: #343a40; font-size: 16px;">${item.name}</h5>
+                                    <div style="display: grid; grid-template-columns: auto auto; gap: 10px; margin-bottom: 10px;">
+                                        <div style="font-size: 14px; color: #666;">
+                                            <strong>Price:</strong> ₹${item.price}
+                                        </div>
+                                        <div style="font-size: 14px; color: #666;">
+                                            <strong>Quantity:</strong> ${item.quantity}
+                                        </div>
+                                        <div style="font-size: 14px; color: #666;">
+                                            <strong>Subtotal:</strong> ₹${(item.price * item.quantity).toFixed(2)}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- CUSTOMIZATION DETAILS -->
+                                    <div class="customization-info" style="margin-top: 10px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 6px;">
+                                            🎨 Customization Details
+                                        </div>
+                                        
+                                        <!-- Placement Position & Side -->
+                                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 4px;">
+                                            <div style="font-size: 11px; color: #666;">
+                                                <strong>Position:</strong> ${item.placement_position || 'Not specified'}
+                                            </div>
+                                            <div style="font-size: 11px; color: #666;">
+                                                <strong>Side:</strong> ${item.design_side ? item.design_side.toUpperCase() : 'FRONT'}
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Size -->
+                                        ${(item.design_width > 0 && item.design_height > 0) ? `
+                                            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                                                <strong>Size:</strong> ${item.design_width}cm × ${item.design_height}cm
+                                            </div>
+                                        ` : ''}
+                                        
+                                        <!-- Custom Requirements -->
+                                        ${item.custom_requirements ? `
+                                            <div style="font-size: 11px; color: #666;">
+                                                <strong>Requirements:</strong> ${item.custom_requirements}
+                                            </div>
+                                        ` : `
+                                            <div style="font-size: 11px; color: #999; font-style: italic;">
+                                                No special requirements
+                                            </div>
+                                        `}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    ordersHTML += `
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Update modal content and show
+            document.getElementById('customerOrdersContent').innerHTML = ordersHTML;
+            openModal('customerOrdersModal');
+            
+        } else {
+            document.getElementById('customerOrdersContent').innerHTML = `
+                <div class="error" style="text-align: center; padding: 40px;">
+                    <h3>❌ Error Loading Orders</h3>
+                    <p>${result.message || 'Failed to load customer orders'}</p>
+                    <button class="nav-btn" onclick="closeModal('customerOrdersModal')" style="margin-top: 15px;">
+                        Close
+                    </button>
+                </div>
+            `;
+            openModal('customerOrdersModal');
+        }
+    } catch (error) {
+        console.error('❌ Error loading customer orders:', error);
+        document.getElementById('customerOrdersContent').innerHTML = `
+            <div class="error" style="text-align: center; padding: 40px;">
+                <h3>🚨 Network Error</h3>
+                <p>${error.message}</p>
+                <button class="nav-btn" onclick="closeModal('customerOrdersModal')" style="margin-top: 15px;">
+                    Close
+                </button>
+            </div>
+        `;
+        openModal('customerOrdersModal');
+    }
+}
+// In your loadAnalyticsData() function, replace the current content with this:
+
+// Enhanced Analytics Loading
+async function loadAnalyticsData() {
+    try {
+        const container = document.getElementById('analyticsContent');
+        container.innerHTML = '<div class="loading">📈 Loading analytics data...</div>';
+
+        // Fetch analytics data from backend
+        const response = await fetch('/admin/analytics');
+        const result = await response.json();
+
+        if (result.success) {
+            renderAnalyticsDashboard(result.analytics);
+        } else {
+            container.innerHTML = `
+                <div class="error" style="text-align: center; padding: 40px;">
+                    <h3>❌ Error Loading Analytics</h3>
+                    <p>${result.message || 'Failed to load analytics data'}</p>
+                    <button class="nav-btn" onclick="loadAnalyticsData()" style="margin-top: 10px;">
+                        🔄 Retry
+                    </button>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Analytics load error:', error);
+        const container = document.getElementById('analyticsContent');
+        container.innerHTML = `
+            <div class="error" style="text-align: center; padding: 40px;">
+                <h3>🚨 Error Loading Analytics</h3>
+                <p>${error.message}</p>
+                <div style="margin-top: 15px;">
+                    <button class="nav-btn" onclick="loadAnalyticsData()">
+                        🔄 Retry
+                    </button>
+                    <button class="nav-btn" onclick="showBasicAnalytics()" style="background: #17a2b8;">
+                        📊 Show Basic Stats
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Fallback function if analytics fails
+function showBasicAnalytics() {
+    const container = document.getElementById('analyticsContent');
+    container.innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+            <h3>📊 Basic Analytics</h3>
+            <p>Advanced analytics are currently unavailable. Here are your basic stats:</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div class="stat-card">
+                    <h3>Total Revenue</h3>
+                    <div class="number" id="basicTotalRevenue">₹0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Orders</h3>
+                    <div class="number" id="basicTotalOrders">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Orders</h3>
+                    <div class="number" id="basicPendingOrders">0</div>
+                </div>
+            </div>
+            <button class="nav-btn" onclick="loadAnalyticsData()" style="margin-top: 20px;">
+                🔄 Try Advanced Analytics Again
+            </button>
+        </div>
+    `;
+    
+    // Load basic stats
+    loadBasicStats();
+}
+
+async function loadBasicStats() {
+    try {
+        const response = await fetch('/admin/stats');
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('basicTotalRevenue').textContent = `₹${(result.stats.total_revenue || 0).toFixed(2)}`;
+            document.getElementById('basicTotalOrders').textContent = result.stats.total_orders || 0;
+            document.getElementById('basicPendingOrders').textContent = result.stats.pending_orders || 0;
+        }
+    } catch (error) {
+        console.error('Error loading basic stats:', error);
+    }
+}
+
+function renderAnalyticsDashboard(data) {
+  const html = `
+    <div class="analytics-section">
+      <!-- Date Filter Controls -->
+      <div class="analytics-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0; color: #343a40;">📊 Sales Analytics Dashboard</h3>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <select id="analyticsPeriod" onchange="updateAnalyticsPeriod()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
+            <option value="30d">Last 30 Days</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="90d">Last 90 Days</option>
+            <option value="1y">Last Year</option>
+          </select>
+          <button class="nav-btn" onclick="exportAnalyticsData()" style="background: #28a745;">📤 Export Report</button>
+          <button class="nav-btn" onclick="loadAnalyticsData()" style="background: #17a2b8;">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Key Metrics Grid -->
+      <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <!-- Revenue Card -->
+        <div class="metric-card" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,123,255,0.3);">
+          <div class="metric-icon" style="font-size: 36px; margin-bottom: 10px;">💰</div>
+          <div class="metric-title" style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Total Revenue</div>
+          <div class="metric-value" style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">₹${data.revenue.total.toLocaleString()}</div>
+          <div class="metric-change ${data.revenue.change_percentage >= 0 ? 'positive' : 'negative'}" style="font-size: 14px; font-weight: bold;">
+            ${data.revenue.change_percentage >= 0 ? '📈' : '📉'} ${Math.abs(data.revenue.change_percentage)}% vs previous period
+          </div>
+        </div>
+        
+        <!-- Orders Card -->
+        <div class="metric-card" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(40,167,69,0.3);">
+          <div class="metric-icon" style="font-size: 36px; margin-bottom: 10px;">📦</div>
+          <div class="metric-title" style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Total Orders</div>
+          <div class="metric-value" style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">${data.orders.total}</div>
+          <div class="metric-change ${data.orders.change_percentage >= 0 ? 'positive' : 'negative'}" style="font-size: 14px; font-weight: bold;">
+            ${data.orders.change_percentage >= 0 ? '📈' : '📉'} ${Math.abs(data.orders.change_percentage)}%
+          </div>
+        </div>
+        
+        <!-- AOV Card -->
+        <div class="metric-card" style="background: linear-gradient(135deg, #ffc107, #e0a800); color: black; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(255,193,7,0.3);">
+          <div class="metric-icon" style="font-size: 36px; margin-bottom: 10px;">📊</div>
+          <div class="metric-title" style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Avg Order Value</div>
+          <div class="metric-value" style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">₹${data.metrics.average_order_value}</div>
+          <div class="metric-subtitle" style="font-size: 12px; opacity: 0.8;">Per completed order</div>
+        </div>
+        
+        <!-- Customers Card -->
+        <div class="metric-card" style="background: linear-gradient(135deg, #6f42c1, #5a2d9c); color: white; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(111,66,193,0.3);">
+          <div class="metric-icon" style="font-size: 36px; margin-bottom: 10px;">👥</div>
+          <div class="metric-title" style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">New Customers</div>
+          <div class="metric-value" style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">${data.customers.new_customers}</div>
+          <div class="metric-change ${data.customers.change_percentage >= 0 ? 'positive' : 'negative'}" style="font-size: 14px; font-weight: bold;">
+            ${data.customers.change_percentage >= 0 ? '📈' : '📉'} ${Math.abs(data.customers.change_percentage)}%
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts and Data Grid -->
+      <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+        <!-- Revenue Trend -->
+        <div class="chart-container" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <h4 style="margin-bottom: 15px; color: #343a40;">📈 Revenue Trend (Last 7 Days)</h4>
+          <div id="revenueChart" style="min-height: 200px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px;">
+            ${data.daily_revenue.length > 0 ? 
+              data.daily_revenue.map(day => `
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 0;">
+                  <div style="min-width: 80px; font-size: 12px;">${new Date(day.date).toLocaleDateString()}</div>
+                  <div style="flex: 1; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                    <div style="background: linear-gradient(90deg, #007bff, #0056b3); height: 20px; width: ${(day.revenue / Math.max(...data.daily_revenue.map(d => d.revenue)) * 100)}%; display: flex; align-items: center; padding-left: 10px; color: white; font-size: 11px;">
+                      ₹${day.revenue}
+                    </div>
+                  </div>
+                </div>
+              `).join('') : 
+              '<div style="text-align: center; color: #666; padding: 40px;">No revenue data available</div>'
+            }
+          </div>
+        </div>
+        
+        <!-- Order Status Distribution -->
+        <div class="chart-container" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <h4 style="margin-bottom: 15px; color: #343a40;">📋 Order Status Distribution</h4>
+          <div id="statusChart" style="min-height: 200px;">
+            ${data.status_breakdown.map(status => `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8f9fa;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="status-badge status-${status.status.toLowerCase()}" style="font-size: 10px; padding: 2px 6px;">${status.status}</span>
+                  <span style="font-size: 12px;">${status.order_count} orders</span>
+                </div>
+                <div style="font-weight: bold; color: #28a745;">₹${status.revenue}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Performing Designs -->
+      <div class="data-section" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h4 style="margin-bottom: 15px; color: #343a40;">🏆 Top Performing Designs</h4>
+        <div class="table-responsive">
+          <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e9ecef;">Design Name</th>
+                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e9ecef;">Orders</th>
+                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e9ecef;">Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.top_designs.map(design => `
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #e9ecef;">
+                    <strong>${design.name}</strong>
+                  </td>
+                  <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">
+                    ${design.order_count}
+                  </td>
+                  <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e9ecef; font-weight: bold; color: #28a745;">
+                    ₹${design.revenue}
+                  </td>
+                </tr>
+              `).join('')}
+              ${data.top_designs.length === 0 ? `
+                <tr>
+                  <td colspan="3" style="padding: 40px; text-align: center; color: #666;">
+                    No design performance data available
+                  </td>
+                </tr>
+              ` : ''}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Additional Metrics -->
+      <div class="additional-metrics" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- Conversion Rate -->
+        <div class="metric-box" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 10px;">🔄</div>
+          <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Conversion Rate</div>
+          <div style="font-size: 24px; font-weight: bold; color: #007bff;">${data.metrics.conversion_rate}%</div>
+          <div style="font-size: 11px; color: #999;">Orders per new customer</div>
+        </div>
+        
+        <!-- Current Period Revenue -->
+        <div class="metric-box" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 10px;">💰</div>
+          <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Current Period Revenue</div>
+          <div style="font-size: 24px; font-weight: bold; color: #28a745;">₹${data.revenue.current_month.toLocaleString()}</div>
+          <div style="font-size: 11px; color: #999;">Last 30 days</div>
+        </div>
+      </div>
+
+      <!-- Data Last Updated -->
+      <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+        📅 Data updated: ${new Date().toLocaleString()}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('analyticsContent').innerHTML = html;
+}
+
+// Add these helper functions to your existing JavaScript:
+
+async function updateAnalyticsPeriod() {
+  const period = document.getElementById('analyticsPeriod').value;
+  
+  try {
+    const response = await fetch('/admin/analytics/period', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ period: period })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      renderPeriodAnalytics(result.period_analytics);
+    } else {
+      alert('Error updating analytics period: ' + result.message);
+    }
+  } catch (error) {
+    console.error('Period analytics error:', error);
+    alert('Error updating analytics period: ' + error.message);
+  }
+}
+
+function renderPeriodAnalytics(data) {
+  // Update the key metrics with period-specific data
+  const revenueElement = document.querySelector('.metric-card:nth-child(1) .metric-value');
+  const ordersElement = document.querySelector('.metric-card:nth-child(2) .metric-value');
+  const aovElement = document.querySelector('.metric-card:nth-child(3) .metric-value');
+  
+  if (revenueElement) revenueElement.textContent = `₹${data.revenue.toLocaleString()}`;
+  if (ordersElement) ordersElement.textContent = data.orders;
+  if (aovElement) aovElement.textContent = `₹${data.average_order_value}`;
+  
+  // Show period info
+  const periodInfo = document.createElement('div');
+  periodInfo.style.cssText = 'text-align: center; margin-top: 10px; color: #666; font-size: 12px;';
+  periodInfo.textContent = `Period: ${data.start_date} to ${data.end_date}`;
+  
+  const existingInfo = document.querySelector('.period-info');
+  if (existingInfo) existingInfo.remove();
+  
+  periodInfo.className = 'period-info';
+  document.querySelector('.analytics-controls').appendChild(periodInfo);
+}
+
+async function exportAnalyticsData() {
+  try {
+    const response = await fetch('/admin/analytics/export');
+    const result = await response.json();
+    
+    if (result.success) {
+      // Create a downloadable JSON file
+      const dataStr = JSON.stringify(result.export_data, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `analytics-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      showNotification('Analytics data exported successfully!', 'success');
+    } else {
+      showNotification('Export failed: ' + result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Export error:', error);
+    showNotification('Export failed: ' + error.message, 'error');
+  }
+}
+
+    // Search Customers Function
+    function searchCustomers() {
+      const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
+      const customers = window.allCustomers || [];
+      
+      if (!searchTerm) {
+        // If search is empty, show all customers
+        renderCustomersTable(customers);
+        return;
+      }
+      
+      const filteredCustomers = customers.filter(customer => 
+        customer.username && customer.username.toLowerCase().includes(searchTerm)
+      );
+      
+      renderCustomersTable(filteredCustomers);
+    }
+
+    // Render Customers Table
+    function renderCustomersTable(customers) {
+      const tbody = document.getElementById('customersTableBody');
+      
+      if (!tbody) return;
+      
+      if (customers.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+              No customers found matching your search.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      let customersHTML = '';
+      
+      customers.forEach(user => {
+        customersHTML += `
+          <tr>
+            <td>${user.id || 'N/A'}</td>
+            <td><strong>${user.fname || ''} ${user.lname || ''}</strong></td>
+            <td>${user.email || 'N/A'}</td>
+            <td>${user.username || 'N/A'}</td>
+            <td>${user.mobile || 'N/A'}</td>
+            <td>
+              <button class="action-btn view-btn" onclick="viewCustomerOrders('${user.username || ''}')">
+                📦 View Orders
+              </button>
+              <button class="action-btn customer-btn" onclick="viewCustomerDetails('${user.username || ''}')" style="margin-top: 5px;">
+                👤 View Profile
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tbody.innerHTML = customersHTML;
+    }
+
+    // Clear Search Function
+    function clearSearch() {
+      document.getElementById('customerSearch').value = '';
+      const customers = window.allCustomers || [];
+      renderCustomersTable(customers);
+    }
+
+    // Utility Functions
+    function refreshData() {
+      if (!checkAdminAccess()) return;
+      const activeSection = document.querySelector('.menu-item.active').getAttribute('data-section');
+      loadSectionData(activeSection);
+      alert('🔄 Data refreshed!');
+    }
+
+    function logout() {
+      localStorage.removeItem("adminUser");
+      window.location.href = "admin-login.html";
+    }
+
+    function goToAdminLogin() {
+      window.location.href = "admin-login.html";
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    function openModal(modalId) {
+      document.getElementById(modalId).style.display = 'flex';
+    }
+
+    // Initialize admin panel
+    function initAdminPanel() {
+      console.log("🚀 Initializing admin panel...");
+      
+      if (!checkAdminAccess()) {
+        console.log("❌ Admin access not granted, showing login required");
+        return;
+      }
+      
+      console.log("✅ Admin access granted, setting up panel");
+      setAdminInfo();
+      setupNavigation();
+      loadDashboardData();
+    }
+
+    // Start the admin panel
+    initAdminPanel();
+
+    // Close modals when clicking outside
+    document.addEventListener('click', function(event) {
+      const modals = document.querySelectorAll('.modal');
+      modals.forEach(modal => {
+        if (event.target === modal) {
+          closeModal(modal.id);
+        }
+      });
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+          if (modal.style.display === 'flex') {
+            closeModal(modal.id);
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

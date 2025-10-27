@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Fine Graphics</title>
+  <style>
+    body { font-family: Arial; background: #f9f9f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .form-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); width: 350px; }
+    h2 { text-align: center; color: #007bff; }
+    input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+    button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    p { text-align: center; margin-top: 10px; }
+    a { color: #007bff; text-decoration: none; }
+    .alert { background:#e2e3e5; color:#383d41; padding:8px; border-radius:5px; margin-bottom:10px; text-align:center; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="form-box">
+    <h2>Login</h2>
+    <div class="alert">Welcome back! Please login to continue.</div>
+    
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    
+    <button onclick="login()">Login</button>
+    <p>Don't have an account? <a href="register.html">Register</a></p>
+  </div>
+
+  <script>
+  async function login() {
+    let username = document.getElementById("username").value.trim();
+    let password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        alert("Please enter both username and password.");
+        return;
+    }
+
+    try {
+        console.log("Sending login request...");
+        
+        let res = await fetch("/login", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        let data = await res.json();
+        console.log("Login response:", data);
+        
+        if (res.ok && data.success) {
+            alert("✅ Login successful!");
+            // Save user data to localStorage
+            localStorage.setItem("currentUser", JSON.stringify(data.user));
+            // redirect to home page
+            window.location.href = "index.html";
+        } else {
+            alert("❌ Error: " + data.message);
+        }
+    } catch (err) {
+        console.error("Login error:", err);
+        alert("⚠ Server error. Please make sure the Flask server is running on http://localhost:5000");
+    }
+}
+  </script>
+</body>
+</html>

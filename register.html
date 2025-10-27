@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px;
+        }
+        
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+            font-size: 24px;
+        }
+        
+        input { 
+            width: 100%; 
+            padding: 15px;
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 16px;
+        }
+        
+        button { 
+            width: 100%; 
+            background: #2575fc; 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #1a5ad7;
+        }
+        
+        a { 
+            color: #2575fc; 
+            text-decoration: none; 
+            font-weight: bold;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        p {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                align-items: flex-start;
+                min-height: 100vh;
+                height: auto;
+            }
+            
+            .container {
+                padding: 25px 20px;
+                margin-top: 20px;
+            }
+            
+            h2 {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+            
+            input {
+                padding: 14px;
+                margin: 8px 0;
+                font-size: 16px;
+            }
+            
+            button {
+                padding: 14px;
+                margin-top: 15px;
+            }
+        }
+
+        /* Small mobile devices */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px 15px;
+                margin-top: 10px;
+            }
+            
+            h2 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+            
+            input {
+                padding: 12px;
+                margin: 6px 0;
+            }
+            
+            button {
+                padding: 12px;
+            }
+            
+            p {
+                font-size: 13px;
+            }
+        }
+
+        /* Very small devices */
+        @media (max-width: 360px) {
+            .container {
+                padding: 15px 12px;
+            }
+            
+            h2 {
+                font-size: 18px;
+            }
+            
+            input, button {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        <input type="text" id="fname" placeholder="First Name" required>
+        <input type="text" id="lname" placeholder="Last Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+        <button onclick="register()">Register</button>
+        <p>Already have an account? <a href="login.html">Login here</a></p>
+    </div>
+
+    <script>
+        async function register() {
+            const fname = document.getElementById('fname').value.trim();
+            const lname = document.getElementById('lname').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Basic validation
+            if (!fname || !lname || !email || !username || !password) {
+                alert("All fields are required!");
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            const data = { fname, lname, email, username, password };
+
+            try {
+                console.log("Sending registration request...");
+                
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                console.log("Registration response:", result);
+
+                if (result.success) {
+                    alert('Registration successful!');
+                    window.location.href = 'login.html';
+                } else {
+                    alert(result.message || "Registration failed.");
+                }
+            } catch (error) {
+                console.error("Registration error:", error);
+                alert("Error connecting to server. Make sure the Flask server is running.");
+            }
+        }
+    </script>
+</body>
+</html>

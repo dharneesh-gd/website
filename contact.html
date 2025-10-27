@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Fine Graphics Textile Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #ffd700;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-login {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-register {
+            background: #ffd700;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Contact Hero Section */
+        .contact-hero {
+            background: linear-gradient(rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)), url('https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 6rem 2rem;
+        }
+
+        .contact-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .contact-hero p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: #667eea;
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        /* Contact Info */
+        .contact-info {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .contact-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+
+        .contact-item:hover {
+            transform: translateX(10px);
+        }
+
+        .contact-icon {
+            font-size: 2rem;
+            color: #667eea;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .contact-text h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .contact-text p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* WhatsApp Specific Styles */
+        .whatsapp-item {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+        }
+
+        .whatsapp-item .contact-text h4,
+        .whatsapp-item .contact-text p {
+            color: white;
+        }
+
+        .whatsapp-item .contact-icon {
+            color: white;
+        }
+
+        /* Contact Form */
+        .contact-form {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .contact-form h3 {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #5a6fd8;
+        }
+
+        /* Quick Action Buttons */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .action-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .action-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-card h4 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .action-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-action {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-action:hover {
+            background: #5a6fd8;
+        }
+
+        /* WhatsApp Button */
+        .btn-whatsapp {
+            background: #25D366;
+        }
+
+        .btn-whatsapp:hover {
+            background: #128C7E;
+        }
+
+        /* Call Button */
+        .btn-call {
+            background: #28a745;
+        }
+
+        .btn-call:hover {
+            background: #218838;
+        }
+
+        /* Map Section */
+        .map-section {
+            margin-top: 4rem;
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .map-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .map-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+
+        /* Map Controls */
+        .map-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .map-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        .map-btn:hover {
+            background: #5a6fd8;
+        }
+
+        /* Business Hours */
+        .business-hours {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+
+        .business-hours h4 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .hours-list {
+            list-style: none;
+            text-align: center;
+        }
+
+        .hours-list li {
+            padding: 0.5rem 0;
+            color: #666;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .hours-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* User Info Styles */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffd700;
+        }
+
+        .cart-badge, .wishlist-badge {
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .contact-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">Fine<span>Graphics</span></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#designs">Designs</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Contact Hero Section -->
+    <section class="contact-hero">
+        <h1>Get In Touch</h1>
+        <p>We're here to help with your textile design needs. Reach out to us through any of the channels below.</p>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <h2 class="section-title">Contact Us</h2>
+        
+        <div class="contact-container">
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <h3>📞 Contact Information</h3>
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div class="contact-text">
+                            <h4>Our Location</h4>
+                            <p>39, Arthanari Street<br>Tirupur - 641604<br>Tamil Nadu, India</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">📞</div>
+                        <div class="contact-text">
+                            <h4>Phone Numbers</h4>
+                            <p>+91 98437 65564<br>+91 98949 82889</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">📧</div>
+                        <div class="contact-text">
+                            <h4>Email Address</h4>
+                            <p>finegps@gmail.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item whatsapp-item">
+                        <div class="contact-icon">💬</div>
+                        <div class="contact-text">
+                            <h4>WhatsApp Business</h4>
+                            <p>Quick responses for design queries and orders</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Hours -->
+                <div class="business-hours">
+                    <h4>🕒 Business Hours</h4>
+                    <ul class="hours-list">
+                        <li><strong>Monday - Saturday:</strong> 9:00 AM - 7:00 PM</li>
+                        <li><strong>Sunday:</strong> Closed</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="contact-form">
+                <h3>✉️ Send us a Message</h3>
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" class="form-control" required placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" class="form-control" required placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" class="form-control" placeholder="Enter your phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">Subject *</label>
+                        <input type="text" id="subject" class="form-control" required placeholder="What is this regarding?">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea id="message" class="form-control" required placeholder="Tell us about your design requirements..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Send Message</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="quick-actions">
+            <div class="action-card">
+                <div class="action-icon">💬</div>
+                <h4>WhatsApp Chat</h4>
+                <p>Get instant responses for design queries and orders</p>
+                <a href="https://wa.me/919843765564?text=Hi%20Fine%20Graphics!%20I%20have%20a%20query%20about%20textile%20designs" 
+                   class="btn-action btn-whatsapp" target="_blank">
+                    💬 Chat on WhatsApp
+                </a>
+            </div>
+            
+            <div class="action-card">
+                <div class="action-icon">📞</div>
+                <h4>Call Us</h4>
+                <p>Speak directly with our design team</p>
+                <a href="tel:+919843765564" class="btn-action btn-call">
+                    📞 Call Now
+                </a>
+            </div>
+            
+            <div class="action-card">
+                <div class="action-icon">📧</div>
+                <h4>Send Email</h4>
+                <p>Send detailed design requirements and specifications</p>
+                <a href="mailto:finegps@gmail.com?subject=Textile Design Inquiry&body=Hello Fine Graphics Team," 
+                   class="btn-action">
+                    📧 Send Email
+                </a>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div class="map-section">
+            <h3>📍 Find Us</h3>
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            <div class="map-controls">
+                <button class="map-btn" id="getDirections">Get Directions</button>
+                <button class="map-btn" id="shareLocation">Share Location</button>
+                <button class="map-btn" id="resetMap">Reset View</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Fine Graphics. All rights reserved.</p>
+        <p>Professional Textile Design Services | Tirupur</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Global variables
+        let currentUser = null;
+        let cart = [];
+        let wishlist = [];
+        let map;
+        let marker;
+
+        // Initialize the application
+        async function initApp() {
+            await checkLoginStatus();
+            loadCartFromStorage();
+            loadWishlistFromStorage();
+            updateAuthButtons();
+            setupContactForm();
+            initMap();
+            setupMapControls();
+        }
+
+        // Check if user is logged in
+        async function checkLoginStatus() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                console.log('User logged in:', currentUser.username);
+            }
+        }
+
+        // Load cart from local storage
+        function loadCartFromStorage() {
+            if (currentUser) {
+                const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+                cart = savedCart ? JSON.parse(savedCart) : [];
+            }
+        }
+
+        // Load wishlist from local storage
+        function loadWishlistFromStorage() {
+            if (currentUser) {
+                const savedWishlist = localStorage.getItem(`wishlist_${currentUser.username}`);
+                wishlist = savedWishlist ? JSON.parse(savedWishlist) : [];
+            }
+        }
+
+        // Update authentication buttons
+        function updateAuthButtons() {
+            const authButtons = document.getElementById('authButtons');
+            
+            if (currentUser) {
+                authButtons.innerHTML = `
+                    <div class="user-info">
+                        <img src="${currentUser.profile_pic || 'https://via.placeholder.com/40'}" 
+                             alt="Profile" class="user-avatar">
+                        <span class="user-name">${currentUser.username}</span>
+                        <div class="cart-badge">
+                            <a href="cart.html" style="color: white; text-decoration: none;">🛒 Cart</a>
+                            <span class="badge" id="cartCount">0</span>
+                        </div>
+                        <div class="wishlist-badge">
+                            <a href="wishlist.html" style="color: white; text-decoration: none;">❤️ Wishlist</a>
+                            <span class="badge" id="wishlistCount">0</span>
+                        </div>
+                        <button class="btn btn-login" onclick="logout()">Logout</button>
+                    </div>
+                `;
+                updateCartBadges();
+            } else {
+                authButtons.innerHTML = `
+                    <a href="login.html" class="btn btn-login">Login</a>
+                    <a href="register.html" class="btn btn-register">Register</a>
+                `;
+            }
+        }
+
+        // Update cart and wishlist badges
+        function updateCartBadges() {
+            const cartCount = document.getElementById('cartCount');
+            const wishlistCount = document.getElementById('wishlistCount');
+            
+            if (cartCount) {
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItems;
+                cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
+            }
+            
+            if (wishlistCount) {
+                wishlistCount.textContent = wishlist.length;
+                wishlistCount.style.display = wishlist.length > 0 ? 'flex' : 'none';
+            }
+        }
+
+        // Setup contact form
+        function setupContactForm() {
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', handleContactFormSubmit);
+            }
+        }
+
+        // Handle contact form submission
+        function handleContactFormSubmit(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+
+            // Here you would typically send this data to your backend
+            // For now, we'll show a success message and open email client
+            showContactSuccess(formData);
+        }
+
+        // Show success message and open email
+        function showContactSuccess(formData) {
+            // Create email body
+            const emailBody = `Hello Fine Graphics Team,%0D%0A%0D%0A
+Name: ${formData.name}%0D%0A
+Email: ${formData.email}%0D%0A
+Phone: ${formData.phone}%0D%0A%0D%0A
+Message:%0D%0A${formData.message}%0D%0A%0D%0A
+Best regards,%0D%0A${formData.name}`;
+
+            // Open email client
+            window.open(`mailto:finegps@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${emailBody}`, '_blank');
+            
+            // Show success message
+            alert('Thank you for your message! Your email client has been opened. Please send the email to complete your inquiry.');
+            
+            // Reset form
+            document.getElementById('contactForm').reset();
+        }
+
+        // Initialize the map
+        function initMap() {
+            // Fine Graphics location coordinates (approximate for Tirupur)
+            const fineGraphicsLocation = [11.1085, 77.3411];
+            
+            // Initialize the map
+            map = L.map('map').setView(fineGraphicsLocation, 15);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Custom icon for Fine Graphics
+            const fineGraphicsIcon = L.divIcon({
+                html: '<div style="background-color: #667eea; color: white; padding: 8px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-weight: bold;">FG</div>',
+                className: 'fine-graphics-marker',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+            });
+            
+            // Add marker for Fine Graphics
+            marker = L.marker(fineGraphicsLocation, {icon: fineGraphicsIcon}).addTo(map);
+            
+            // Add popup with business information
+            marker.bindPopup(`
+                <div style="text-align: center;">
+                    <h3 style="margin: 0 0 10px; color: #667eea;">Fine Graphics</h3>
+                    <p style="margin: 0 0 5px;"><strong>Textile Design Services</strong></p>
+                    <p style="margin: 0 0 5px;">39, Arthanari Street</p>
+                    <p style="margin: 0 0 5px;">Tirupur - 641604</p>
+                    <p style="margin: 0 0 10px;">Tamil Nadu, India</p>
+                    <a href="https://maps.google.com/?q=39,Arthanari+Street,Tirupur" target="_blank" style="background: #667eea; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; display: inline-block;">Open in Google Maps</a>
+                </div>
+            `).openPopup();
+            
+            // Add a circle to highlight the area
+            L.circle(fineGraphicsLocation, {
+                color: '#667eea',
+                fillColor: '#667eea',
+                fillOpacity: 0.1,
+                radius: 200
+            }).addTo(map);
+        }
+
+        // Setup map controls
+        function setupMapControls() {
+            // Get Directions button
+            document.getElementById('getDirections').addEventListener('click', function() {
+                const url = `https://www.google.com/maps/dir/?api=1&destination=39,Arthanari+Street,Tirupur,Tamil+Nadu,641604`;
+                window.open(url, '_blank');
+            });
+            
+            // Share Location button
+            document.getElementById('shareLocation').addEventListener('click', function() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Fine Graphics - Textile Design Services',
+                        text: 'Visit Fine Graphics for professional textile design services',
+                        url: 'https://maps.google.com/?q=39,Arthanari+Street,Tirupur,Tamil+Nadu,641604'
+                    })
+                    .catch(error => console.log('Error sharing:', error));
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    const shareText = 'Fine Graphics - Textile Design Services\nLocation: 39, Arthanari Street, Tirupur - 641604, Tamil Nadu, India\n\n';
+                    const shareUrl = 'https://maps.google.com/?q=39,Arthanari+Street,Tirupur,Tamil+Nadu,641604';
+                    
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(shareText + shareUrl)
+                            .then(() => alert('Location copied to clipboard!'))
+                            .catch(err => alert('Failed to copy location: ' + err));
+                    } else {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = shareText + shareUrl;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        alert('Location copied to clipboard!');
+                    }
+                }
+            });
+            
+            // Reset Map button
+            document.getElementById('resetMap').addEventListener('click', function() {
+                map.setView([11.1085, 77.3411], 15);
+                marker.openPopup();
+            });
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            cart = [];
+            wishlist = [];
+            window.location.href = 'index.html';
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Fine Graphics Textile Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #ffd700;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-login {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-register {
+            background: #ffd700;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* About Hero Section */
+        .about-hero {
+            background: linear-gradient(rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)), url('https://images.unsplash.com/photo-1558769132-cb25e35dc9a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 6rem 2rem;
+        }
+
+        .about-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .about-hero p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* About Content Sections */
+        .about-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: #667eea;
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .about-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .about-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .about-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+        }
+
+        .about-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .about-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Mission Vision Section */
+        .mission-vision {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .mission-box, .vision-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+        }
+
+        .mission-box h3, .vision-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .mission-box p, .vision-box p {
+            color: #666;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* Services Section */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .service-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .service-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .service-item h4 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        /* Contact Info Section */
+        .contact-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 2rem;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .contact-item {
+            padding: 2rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-item h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Team Section */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .team-member {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .member-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 1.5rem;
+            border: 5px solid #667eea;
+        }
+
+        .team-member h4 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .team-member .role {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* User Info Styles */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffd700;
+        }
+
+        .cart-badge, .wishlist-badge {
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .about-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .mission-vision {
+                grid-template-columns: 1fr;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">Fine<span>Graphics</span></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#designs">Designs</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <!-- About Hero Section -->
+    <section class="about-hero">
+        <h1>About Fine Graphics</h1>
+        <p>Leading Textile Design Innovators in Tirupur - Transforming Fabric with Creative Excellence</p>
+    </section>
+
+    <!-- Company Overview -->
+    <section class="about-section">
+        <h2 class="section-title">Who We Are</h2>
+        <div class="about-grid">
+            <div class="about-card">
+                <div class="about-icon">🎨</div>
+                <h3>Our Story</h3>
+                <p>Fine Graphics is a premier textile design company based in Tirupur, the textile capital of India. We specialize in creating innovative and trend-setting designs for the garment industry.</p>
+            </div>
+            <div class="about-card">
+                <div class="about-icon">🏆</div>
+                <h3>Our Expertise</h3>
+                <p>With years of experience in textile design, we understand the unique requirements of the fashion industry and deliver designs that resonate with market trends and customer preferences.</p>
+            </div>
+            <div class="about-card">
+                <div class="about-icon">🚀</div>
+                <h3>Our Approach</h3>
+                <p>We combine traditional design principles with modern technology to create patterns that are both timeless and contemporary, helping our clients stay ahead in the competitive textile market.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission & Vision -->
+    <section class="about-section">
+        <h2 class="section-title">Our Mission & Vision</h2>
+        <div class="mission-vision">
+            <div class="mission-box">
+                <h3>Our Mission</h3>
+                <p>To revolutionize textile design by creating innovative, sustainable, and market-responsive patterns that empower clothing manufacturers and brands to create exceptional products that captivate consumers worldwide.</p>
+            </div>
+            <div class="vision-box">
+                <h3>Our Vision</h3>
+                <p>To become the most trusted and innovative textile design partner in South India, recognized for our creative excellence, technical expertise, and commitment to helping clients achieve commercial success through outstanding design solutions.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section class="about-section">
+        <h2 class="section-title">Our Services</h2>
+        <div class="services-grid">
+            <div class="service-item">
+                <div class="service-icon">👕</div>
+                <h4>Knitwear Designs</h4>
+                <p>Specialized patterns for t-shirts, sweaters, and knitted garments</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">👚</div>
+                <h4>Woven Fabric Patterns</h4>
+                <p>Traditional and contemporary designs for shirts, dresses, and formal wear</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">🎽</div>
+                <h4>Sportswear Graphics</h4>
+                <p>Dynamic and energetic designs for athletic and casual wear</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">👶</div>
+                <h4>Kids Wear Patterns</h4>
+                <p>Colorful and playful designs for children's clothing</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">💼</div>
+                <h4>Corporate Wear</h4>
+                <p>Professional and sophisticated patterns for uniform and formal wear</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">🔍</div>
+                <h4>Custom Design</h4>
+                <p>Bespoke design solutions tailored to your specific requirements</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="about-section">
+        <h2 class="section-title">Why Choose Fine Graphics?</h2>
+        <div class="about-grid">
+            <div class="about-card">
+                <div class="about-icon">💡</div>
+                <h3>Innovative Designs</h3>
+                <p>We stay updated with global fashion trends to deliver fresh and relevant designs</p>
+            </div>
+            <div class="about-card">
+                <div class="about-icon">⚡</div>
+                <h3>Fast Turnaround</h3>
+                <p>Quick design delivery without compromising on quality and creativity</p>
+            </div>
+            <div class="about-card">
+                <div class="about-icon">💰</div>
+                <h3>Competitive Pricing</h3>
+                <p>High-quality designs at prices that give you a competitive edge</p>
+            </div>
+            <div class="about-card">
+                <div class="about-icon">🤝</div>
+                <h3>Client Collaboration</h3>
+                <p>We work closely with you to ensure designs meet your exact specifications</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Information -->
+    <section class="about-section" id="contact">
+        <h2 class="section-title">Get In Touch</h2>
+        <div class="contact-info">
+            <h3 style="font-size: 2rem; margin-bottom: 1rem;">We'd Love to Hear From You</h3>
+            <p style="font-size: 1.2rem; opacity: 0.9;">Contact us for custom design solutions and collaborations</p>
+            
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <h4>Our Location</h4>
+                    <p>39, Arthanari Street<br>Tirupur - 641604<br>Tamil Nadu, India</p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <h4>Phone Numbers</h4>
+                    <p>+91 98437 65564<br>+91 98949 82889</p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <h4>Email Address</h4>
+                    <p>finegps@gmail.com</p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🕒</div>
+                    <h4>Business Hours</h4>
+                    <p>Monday - Saturday: 9:00 AM - 7:00 PM<br>Sunday: Closed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Fine Graphics. All rights reserved.</p>
+        <p>Professional Textile Design Services | Tirupur</p>
+    </footer>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let cart = [];
+        let wishlist = [];
+
+        // Initialize the application
+        async function initApp() {
+            await checkLoginStatus();
+            loadCartFromStorage();
+            loadWishlistFromStorage();
+            updateAuthButtons();
+        }
+
+        // Check if user is logged in
+        async function checkLoginStatus() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                console.log('User logged in:', currentUser.username);
+            }
+        }
+
+        // Load cart from local storage
+        function loadCartFromStorage() {
+            if (currentUser) {
+                const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+                cart = savedCart ? JSON.parse(savedCart) : [];
+            }
+        }
+
+        // Load wishlist from local storage
+        function loadWishlistFromStorage() {
+            if (currentUser) {
+                const savedWishlist = localStorage.getItem(`wishlist_${currentUser.username}`);
+                wishlist = savedWishlist ? JSON.parse(savedWishlist) : [];
+            }
+        }
+
+        // Update authentication buttons
+        function updateAuthButtons() {
+            const authButtons = document.getElementById('authButtons');
+            
+            if (currentUser) {
+                authButtons.innerHTML = `
+                    <div class="user-info">
+                        <img src="${currentUser.profile_pic || 'https://via.placeholder.com/40'}" 
+                             alt="Profile" class="user-avatar">
+                        <span class="user-name">${currentUser.username}</span>
+                        <div class="cart-badge">
+                            <a href="cart.html" style="color: white; text-decoration: none;">🛒 Cart</a>
+                            <span class="badge" id="cartCount">0</span>
+                        </div>
+                        <div class="wishlist-badge">
+                            <a href="wishlist.html" style="color: white; text-decoration: none;">❤️ Wishlist</a>
+                            <span class="badge" id="wishlistCount">0</span>
+                        </div>
+                        <button class="btn btn-login" onclick="logout()">Logout</button>
+                    </div>
+                `;
+                updateCartBadges();
+            } else {
+                authButtons.innerHTML = `
+                    <a href="login.html" class="btn btn-login">Login</a>
+                    <a href="register.html" class="btn btn-register">Register</a>
+                `;
+            }
+        }
+
+        // Update cart and wishlist badges
+        function updateCartBadges() {
+            const cartCount = document.getElementById('cartCount');
+            const wishlistCount = document.getElementById('wishlistCount');
+            
+            if (cartCount) {
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItems;
+                cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
+            }
+            
+            if (wishlistCount) {
+                wishlistCount.textContent = wishlist.length;
+                wishlistCount.style.display = wishlist.length > 0 ? 'flex' : 'none';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            cart = [];
+            wishlist = [];
+            window.location.href = 'index.html';
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

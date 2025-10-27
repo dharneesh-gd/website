@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist - Fine Graphics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #ffd700;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-login {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-register {
+            background: #ffd700;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffd700;
+        }
+
+        .cart-badge, .wishlist-badge {
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Wishlist Section */
+        .wishlist-section {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .wishlist-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        /* Wishlist Grid */
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .wishlist-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .wishlist-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .wishlist-item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .wishlist-item-details {
+            padding: 1.5rem;
+        }
+
+        .wishlist-item-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .wishlist-item-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .wishlist-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-cart, .btn-remove {
+            flex: 1;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-cart {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-remove {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-cart:hover, .btn-remove:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced disabled states */
+        .btn-cart.disabled-login {
+            background: #6c757d !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none !important;
+        }
+
+        .btn-cart.disabled-profile {
+            background: #ffc107 !important;
+            color: #212529 !important;
+            cursor: not-allowed;
+            opacity: 0.9;
+            transform: none !important;
+        }
+
+        .btn-cart.disabled-login:hover, .btn-cart.disabled-profile:hover {
+            opacity: 0.7;
+            transform: none !important;
+        }
+
+        /* Login and Profile Required Messages */
+        .login-required-message, .profile-required-message {
+            text-align: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .login-required-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+        }
+
+        .login-required-message p {
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-required-message {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+        }
+
+        .profile-required-message p {
+            color: #0c5460;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-login-small, .btn-profile-small {
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-login-small {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-profile-small {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-login-small:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-profile-small:hover {
+            background: #138496;
+        }
+
+        /* Empty Wishlist */
+        .empty-wishlist {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            grid-column: 1 / -1;
+        }
+
+        .empty-wishlist h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .empty-wishlist p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+
+        /* Loading and Error */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .error {
+            text-align: center;
+            padding: 2rem;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .modal-header h3 {
+            color: #333;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #333;
+            background: #f8f9fa;
+            border-radius: 50%;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-save {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        .btn-save:hover {
+            background: #218838;
+        }
+
+        /* Customization Form Styles */
+        .customization-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .customization-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .size-inputs {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .size-inputs .form-control {
+            flex: 1;
+        }
+
+        .size-unit {
+            color: #666;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .customization-preview {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .customization-preview h4 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .customization-preview p {
+            margin: 0.2rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .customization-required {
+            color: #dc3545;
+            margin-left: 2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .wishlist-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wishlist-item-actions {
+                flex-direction: column;
+            }
+
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .customization-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn-cancel, .btn-save {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">Fine<span>Graphics</span></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#designs">Designs</a></li>
+                    <li><a href="cart.html">Cart</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Wishlist Section -->
+    <section class="wishlist-section">
+        <h1 class="wishlist-title">❤️ My Wishlist</h1>
+        
+        <div class="wishlist-grid" id="wishlistItems">
+            <div class="loading">Loading wishlist...</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Fine Graphics. All rights reserved.</p>
+        <p>Professional Graphic Design Services</p>
+    </footer>
+
+    <!-- Design Customization Modal -->
+    <div id="customizationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="customizationModalTitle">Customize Design</h3>
+                <button class="close-btn" onclick="closeCustomizationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="customizationForm" onsubmit="handleCustomizationSubmit(event)">
+                    <div class="customization-form-grid">
+                        <div class="form-group">
+                            <label for="designSide">Design Side <span class="customization-required">*</span></label>
+                            <select id="designSide" class="form-control" required>
+                                <option value="">Select Side</option>
+                                <option value="Front">Front</option>
+                                <option value="Back">Back</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="placementPosition">Placement Position <span class="customization-required">*</span></label>
+                            <select id="placementPosition" class="form-control" required>
+                                <option value="">Select Position</option>
+                                <option value="LEFT TOP">LEFT TOP</option>
+                                <option value="LEFT BOTTOM">LEFT BOTTOM</option>
+                                <option value="MIDDLE">MIDDLE</option>
+                                <option value="RIGHT TOP">RIGHT TOP</option>
+                                <option value="RIGHT BOTTOM">RIGHT BOTTOM</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="designSize">Design Size (in cm) <span class="customization-required">*</span></label>
+                        <div class="size-inputs">
+                            <input type="number" id="designWidth" class="form-control" placeholder="Width" min="1" max="100" required>
+                            <span class="size-unit">×</span>
+                            <input type="number" id="designHeight" class="form-control" placeholder="Height" min="1" max="100" required>
+                            <span class="size-unit">cm</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customRequirements">Custom Requirements (Optional)</label>
+                        <textarea id="customRequirements" class="form-control" rows="3" placeholder="Any specific requirements or notes for the design..."></textarea>
+                    </div>
+                    
+                    <div class="customization-preview">
+                        <h4>Customization Summary</h4>
+                        <p id="previewSide">Side: Not selected</p>
+                        <p id="previewPosition">Position: Not selected</p>
+                        <p id="previewSize">Size: Not specified</p>
+                        <p id="previewRequirements">Requirements: None</p>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeCustomizationModal()">Cancel</button>
+                        <button type="submit" class="btn-save">✅ Add to Cart</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👤 Update Profile</h3>
+                <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="profileAddress">Address *</label>
+                        <textarea id="profileAddress" class="form-control" rows="3" placeholder="Enter your address" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profileMobile">Mobile Number *</label>
+                        <input type="tel" id="profileMobile" class="form-control" 
+                               placeholder="Enter 10-digit mobile number" maxlength="10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profileDistrict">District *</label>
+                        <select id="profileDistrict" class="form-control" required>
+                            <option value="">Select District</option>
+                            <option value="Tirupur">Tirupur</option>
+                            <option value="Coimbatore">Coimbatore</option>
+                            <option value="Erode">Erode</option>
+                            <option value="Chennai">Chennai</option>
+                            <option value="Bangalore">Bangalore</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeProfileModal()">Cancel</button>
+                        <button type="submit" class="btn-save">💾 Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let wishlist = [];
+        let cart = [];
+        let currentCustomizationDesign = null; // Store design being customized
+
+        // Initialize the application
+        async function initApp() {
+            await checkLoginStatus();
+            await loadWishlist();
+            loadCartFromStorage();
+            updateAuthButtons();
+        }
+
+        // Check if user is logged in
+        async function checkLoginStatus() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                console.log('User logged in:', currentUser.username);
+            } else {
+                // Redirect to login if not logged in
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Check if user profile is complete
+        function isProfileComplete() {
+            if (!currentUser) return false;
+            
+            return currentUser.address && 
+                   currentUser.mobile && 
+                   currentUser.district &&
+                   currentUser.address.trim() !== '' &&
+                   currentUser.mobile.trim() !== '' &&
+                   currentUser.district.trim() !== '';
+        }
+
+        // Show login required message
+        function showLoginRequired() {
+            showNotification('🔐 Please login to use this feature', 'remove');
+            
+            setTimeout(() => {
+                if (confirm('You need to login to continue. Go to login page?')) {
+                    window.location.href = 'login.html';
+                }
+            }, 2000);
+        }
+
+        // Show profile completion required message
+        function showProfileRequired() {
+            showNotification('📝 Please complete your profile first', 'remove');
+            
+            setTimeout(() => {
+                if (confirm('You need to complete your profile before shopping. Complete it now?')) {
+                    openUpdateProfileModal();
+                }
+            }, 1000);
+        }
+
+        // Load wishlist from database - ENHANCED with debugging
+        async function loadWishlist() {
+            try {
+                const wishlistContainer = document.getElementById('wishlistItems');
+                wishlistContainer.innerHTML = '<div class="loading">Loading wishlist...</div>';
+
+                console.log(`Loading wishlist for user: ${currentUser.username}`);
+                
+                // Load wishlist from database
+                if (currentUser) {
+                    const response = await fetch(`/getUserData/${currentUser.username}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        wishlist = result.wishlist || [];
+                        console.log(`Loaded ${wishlist.length} items from database`);
+                    } else {
+                        // Fallback to local storage
+                        const savedWishlist = localStorage.getItem(`wishlist_${currentUser.username}`);
+                        wishlist = savedWishlist ? JSON.parse(savedWishlist) : [];
+                        console.log(`Loaded ${wishlist.length} items from local storage`);
+                    }
+                }
+
+                console.log(`Final wishlist count: ${wishlist.length}`);
+                
+                if (wishlist.length === 0) {
+                    wishlistContainer.innerHTML = `
+                        <div class="empty-wishlist">
+                            <h3>Your wishlist is empty</h3>
+                            <p>Add some designs you love!</p>
+                            <a href="index.html" class="btn-primary">Browse Designs</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let wishlistHTML = '';
+
+                wishlist.forEach(item => {
+                    console.log(`Rendering wishlist item: ${item.name}`);
+                    
+                    // Check conditions for button states
+                    const isLoggedIn = !!currentUser;
+                    const hasCompleteProfile = isProfileComplete();
+                    const canAddToCart = isLoggedIn && hasCompleteProfile;
+
+                    let cartButtonText, cartButtonClass, cartOnClick;
+
+                    if (!isLoggedIn) {
+                        cartButtonText = '🔒 Login for Cart';
+                        cartButtonClass = 'disabled-login';
+                        cartOnClick = 'showLoginRequired()';
+                    } else if (!hasCompleteProfile) {
+                        cartButtonText = '📝 Complete Profile';
+                        cartButtonClass = 'disabled-profile';
+                        cartOnClick = 'showProfileRequired()';
+                    } else {
+                        cartButtonText = '🛒 Add to Cart';
+                        cartButtonClass = '';
+                        cartOnClick = `openCustomizationModal('${item.name}', ${item.price}, '${item.image}')`;
+                    }
+
+                    wishlistHTML += `
+                        <div class="wishlist-item">
+                            <img src="${item.image}" alt="${item.name}" class="wishlist-item-image">
+                            <div class="wishlist-item-details">
+                                <div class="wishlist-item-name">${item.name}</div>
+                                <div class="wishlist-item-price">₹${item.price}</div>
+                                <div class="wishlist-item-actions">
+                                    <button class="btn-cart ${cartButtonClass}" 
+                                            onclick="${cartOnClick}"
+                                            title="${!isLoggedIn ? 'Please login to add to cart' : (!hasCompleteProfile ? 'Please complete your profile first' : '')}">
+                                        ${cartButtonText}
+                                    </button>
+                                    <button class="btn-remove" onclick="removeFromWishlist('${item.name}')">
+                                        ❌ Remove
+                                    </button>
+                                </div>
+                                ${!isLoggedIn ? `
+                                    <div class="login-required-message">
+                                        <p>🔐 Please login to manage your cart and wishlist</p>
+                                        <a href="login.html" class="btn-login-small">Login Now</a>
+                                    </div>
+                                ` : (!hasCompleteProfile ? `
+                                    <div class="profile-required-message">
+                                        <p>📝 Please complete your profile with address, mobile, and district to start shopping</p>
+                                        <button class="btn-profile-small" onclick="openUpdateProfileModal()">Complete Profile</button>
+                                    </div>
+                                ` : '')}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                wishlistContainer.innerHTML = wishlistHTML;
+                console.log(`Rendered ${wishlist.length} wishlist items`);
+                
+            } catch (error) {
+                console.error('Error loading wishlist:', error);
+                document.getElementById('wishlistItems').innerHTML = `
+                    <div class="error">
+                        <h3>Error loading wishlist</h3>
+                        <p>${error.message}</p>
+                        <button class="btn-primary" onclick="loadWishlist()">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Customization Modal Functions
+        function openCustomizationModal(designName, price, image) {
+            if (!currentUser) {
+                showLoginRequired();
+                return;
+            }
+            
+            if (!isProfileComplete()) {
+                showProfileRequired();
+                return;
+            }
+
+            // Store the design being customized
+            currentCustomizationDesign = {
+                name: designName,
+                price: price,
+                image: image
+            };
+
+            // Reset form
+            document.getElementById('customizationForm').reset();
+            document.getElementById('designWidth').value = '';
+            document.getElementById('designHeight').value = '';
+            document.getElementById('customRequirements').value = '';
+
+            // Update modal title
+            document.getElementById('customizationModalTitle').textContent = `Customize: ${designName}`;
+
+            // Show modal
+            const modal = document.getElementById('customizationModal');
+            modal.style.display = 'flex';
+        }
+
+        function closeCustomizationModal() {
+            const modal = document.getElementById('customizationModal');
+            modal.style.display = 'none';
+            currentCustomizationDesign = null;
+        }
+
+        function handleCustomizationSubmit(event) {
+            event.preventDefault();
+            
+            if (!currentCustomizationDesign) {
+                showNotification('No design selected for customization', 'remove');
+                return;
+            }
+
+            // Get form values
+            const designSide = document.getElementById('designSide').value;
+            const placementPosition = document.getElementById('placementPosition').value;
+            const designWidth = parseInt(document.getElementById('designWidth').value) || 0;
+            const designHeight = parseInt(document.getElementById('designHeight').value) || 0;
+            const customRequirements = document.getElementById('customRequirements').value.trim();
+
+            // Validation
+            if (!designSide) {
+                showNotification('Please select design side', 'remove');
+                return;
+            }
+
+            if (!placementPosition) {
+                showNotification('Please select placement position', 'remove');
+                return;
+            }
+
+            if (designWidth <= 0 || designHeight <= 0) {
+                showNotification('Please enter valid dimensions (greater than 0)', 'remove');
+                return;
+            }
+
+            // Add to cart with customization
+            addToCartWithCustomization(
+                currentCustomizationDesign.name,
+                currentCustomizationDesign.price,
+                currentCustomizationDesign.image,
+                designSide,
+                placementPosition,
+                designWidth,
+                designHeight,
+                customRequirements
+            );
+
+            // Close modal
+            closeCustomizationModal();
+        }
+
+        // Add to cart with customization data
+        function addToCartWithCustomization(designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements) {
+            if (!currentUser) {
+                showLoginRequired();
+                return;
+            }
+            
+            if (!isProfileComplete()) {
+                showProfileRequired();
+                return;
+            }
+
+            console.log('🎯 Adding to cart from wishlist:', {
+                designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements
+            });
+
+            const existingItemIndex = cart.findIndex(item => item.name === designName);
+            
+            if (existingItemIndex !== -1) {
+                // Item already in cart - REMOVE it
+                cart.splice(existingItemIndex, 1);
+                showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+            } else {
+                // Item not in cart - ADD it with customization
+                const cartItem = {
+                    name: designName,
+                    price: parseFloat(price),
+                    quantity: 1,
+                    image: image,
+                    placement_position: placementPosition,
+                    design_side: designSide,
+                    design_width: parseInt(designWidth),
+                    design_height: parseInt(designHeight),
+                    custom_requirements: customRequirements
+                };
+                
+                console.log('🛒 Cart item being added:', cartItem);
+                cart.push(cartItem);
+                showNotification(`✅ ${designName} added to cart with customization!`, 'success');
+            }
+
+            // Save and sync
+            saveCartToStorage();
+            updateCartBadges();
+            
+            // Force sync to database
+            syncCartToDatabase().then(() => {
+                console.log('🔄 Cart sync completed from wishlist');
+            });
+        }
+
+        // Sync cart to database
+        async function syncCartToDatabase() {
+            if (!currentUser) {
+                console.log('❌ No user logged in, cannot sync cart');
+                return;
+            }
+
+            try {
+                console.log('🔄 Syncing cart to database from wishlist:', cart);
+                
+                const response = await fetch('/syncUserData', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        cart: cart,
+                        wishlist: null // Skip wishlist sync
+                    })
+                });
+                
+                const result = await response.json();
+                console.log("✅ Cart sync response from wishlist:", result);
+                return result;
+            } catch (error) {
+                console.error('❌ Error syncing cart to database from wishlist:', error);
+                throw error;
+            }
+        }
+
+        // Remove item from wishlist - FIXED to work correctly
+        async function removeFromWishlist(designName) {
+            console.log(`Removing from wishlist: ${designName}`);
+            console.log(`Before removal: ${wishlist.length} items`);
+            
+            // Filter out the item to remove
+            wishlist = wishlist.filter(item => {
+                const shouldKeep = item.name !== designName;
+                if (!shouldKeep) {
+                    console.log(`Removing item: ${item.name}`);
+                }
+                return shouldKeep;
+            });
+            
+            console.log(`After removal: ${wishlist.length} items`);
+            
+            await saveWishlist();
+            await loadWishlist(); // Reload to refresh the display
+        }
+
+        // Save wishlist to database and local storage - FIXED to preserve cart
+        async function saveWishlist() {
+            // Save to local storage
+            if (currentUser) {
+                localStorage.setItem(`wishlist_${currentUser.username}`, JSON.stringify(wishlist));
+            }
+            
+            // Sync to database - send null for cart to skip cart sync
+            try {
+                await fetch('/syncUserData', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        cart: null, // Send null to skip cart sync
+                        wishlist: wishlist
+                    })
+                });
+                console.log("✅ Wishlist saved successfully from wishlist page");
+            } catch (error) {
+                console.error('Error syncing wishlist to database from wishlist page:', error);
+            }
+        }
+
+        // Save cart to local storage
+        function saveCartToStorage() {
+            if (currentUser) {
+                localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
+            }
+        }
+
+        // Load cart from local storage
+        function loadCartFromStorage() {
+            if (currentUser) {
+                const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+                cart = savedCart ? JSON.parse(savedCart) : [];
+            }
+        }
+
+        // Update authentication buttons
+        function updateAuthButtons() {
+            const authButtons = document.getElementById('authButtons');
+            
+            if (currentUser) {
+                authButtons.innerHTML = `
+                    <div class="user-info">
+                        <img src="${currentUser.profile_pic || 'https://via.placeholder.com/40'}" 
+                             alt="Profile" class="user-avatar">
+                        <span class="user-name">${currentUser.username}</span>
+                        <div class="cart-badge">
+                            <a href="cart.html" style="color: white; text-decoration: none;">🛒 Cart</a>
+                            <span class="badge" id="cartCount">0</span>
+                        </div>
+                        <button class="btn btn-login" onclick="logout()">Logout</button>
+                    </div>
+                `;
+                updateCartBadge();
+            } else {
+                authButtons.innerHTML = `
+                    <a href="login.html" class="btn btn-login">Login</a>
+                    <a href="register.html" class="btn btn-register">Register</a>
+                `;
+            }
+        }
+
+        // Update cart badge
+        function updateCartBadge() {
+            const cartCount = document.getElementById('cartCount');
+            if (cartCount) {
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItems;
+                cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
+            }
+        }
+
+        // Profile Modal Functions
+        function openUpdateProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.style.display = 'flex';
+            
+            // Populate current user data
+            if (currentUser) {
+                document.getElementById('profileAddress').value = currentUser.address || '';
+                document.getElementById('profileMobile').value = currentUser.mobile || '';
+                document.getElementById('profileDistrict').value = currentUser.district || '';
+            }
+            
+            // Add form submit handler
+            document.getElementById('profileForm').onsubmit = handleProfileUpdate;
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.style.display = 'none';
+        }
+
+        async function handleProfileUpdate(event) {
+            event.preventDefault();
+            
+            if (!currentUser) {
+                showNotification('Please login to update profile', 'remove');
+                return;
+            }
+            
+            const address = document.getElementById('profileAddress').value.trim();
+            const mobile = document.getElementById('profileMobile').value.trim();
+            const district = document.getElementById('profileDistrict').value;
+            
+            // Validation
+            if (!address) {
+                showNotification('Please enter your address', 'remove');
+                return;
+            }
+            
+            if (!mobile) {
+                showNotification('Please enter your mobile number', 'remove');
+                return;
+            }
+            
+            if (!/^\d{10}$/.test(mobile)) {
+                showNotification('Please enter a valid 10-digit mobile number', 'remove');
+                return;
+            }
+            
+            if (!district) {
+                showNotification('Please select your district', 'remove');
+                return;
+            }
+            
+            try {
+                const saveBtn = document.querySelector('.btn-save');
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = '⏳ Saving...';
+                saveBtn.disabled = true;
+                
+                // Update user data
+                currentUser.address = address;
+                currentUser.mobile = mobile;
+                currentUser.district = district;
+                
+                // Save to localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Sync to database
+                const response = await fetch('/syncUserData', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        address: address,
+                        mobile: mobile,
+                        district: district,
+                        cart: null, // Skip cart sync
+                        wishlist: null // Skip wishlist sync
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('✅ Profile updated successfully!', 'success');
+                    closeProfileModal();
+                    
+                    // Reload wishlist to update button states
+                    await loadWishlist();
+                } else {
+                    throw new Error(result.message || 'Failed to update profile');
+                }
+                
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showNotification('❌ Failed to update profile: ' + error.message, 'remove');
+            } finally {
+                const saveBtn = document.querySelector('.btn-save');
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            // Style the notification
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
+                z-index: 10000;
+                animation: slideIn 0.3s ease-out;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                ${type === 'success' ? 'background: #28a745;' : 'background: #dc3545;'}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOut 0.3s ease-in';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 3000);
+        }
+
+        // Update cart badges
+        function updateCartBadges() {
+            const cartCount = document.getElementById('cartCount');
+            if (cartCount) {
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItems;
+                cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
+            }
+        }
+
+        // Real-time preview updates
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update preview when form fields change
+            const updatePreview = () => {
+                const side = document.getElementById('designSide').value || 'Not selected';
+                const position = document.getElementById('placementPosition').value || 'Not selected';
+                const width = document.getElementById('designWidth').value || '';
+                const height = document.getElementById('designHeight').value || '';
+                const requirements = document.getElementById('customRequirements').value || 'None';
+                
+                document.getElementById('previewSide').textContent = `Side: ${side}`;
+                document.getElementById('previewPosition').textContent = `Position: ${position}`;
+                document.getElementById('previewSize').textContent = `Size: ${width && height ? `${width}×${height} cm` : 'Not specified'}`;
+                document.getElementById('previewRequirements').textContent = `Requirements: ${requirements}`;
+            };
+            
+            // Add event listeners for real-time preview
+            document.getElementById('designSide')?.addEventListener('change', updatePreview);
+            document.getElementById('placementPosition')?.addEventListener('change', updatePreview);
+            document.getElementById('designWidth')?.addEventListener('input', updatePreview);
+            document.getElementById('designHeight')?.addEventListener('input', updatePreview);
+            document.getElementById('customRequirements')?.addEventListener('input', updatePreview);
+        });
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
