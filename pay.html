@@ -7,14 +7,25 @@
   <script>
     // Force desktop view only on mobile devices
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-        var viewport = document.querySelector("meta[name=viewport]");
-        if (viewport) {
-            viewport.setAttribute('content', 'width=1200, initial-scale=0.5, user-scalable=yes');
+    var viewport = document.querySelector("meta[name=viewport]");
+    if (viewport) {
+        var screenWidth = screen.width;
+        
+        if (screenWidth < 768) {
+            // Small phones
+            viewport.setAttribute('content', 'width=480, initial-scale=1.0, user-scalable=yes');
+        } else if (screenWidth < 1024) {
+            // Tablets and large phones
+            viewport.setAttribute('content', 'width=768, initial-scale=1.0, user-scalable=yes');
+        } else {
+            // Larger tablets
+            viewport.setAttribute('content', 'width=1024, initial-scale=1.0, user-scalable=yes');
         }
     }
-  </script>
+}
+</script>
   <style>
-    /* Your existing CSS styles remain the same */
+    /* Your existing CSS styles */
     body { 
       font-family: Arial, sans-serif; 
       margin: 0; 
@@ -69,13 +80,6 @@
       font-size: 16px; 
     }
 
-    .totalBox { 
-      text-align: right; 
-      font-size: 20px; 
-      font-weight: bold; 
-      margin-top: 15px; 
-    }
-
     .btn {
       display: block;
       width: 100%;
@@ -118,7 +122,6 @@
       border-radius: 12px; 
     }
 
-    /* Success overlay */
     #successBox {
       display: none;
       text-align: center;
@@ -189,14 +192,14 @@
       font-size: 20px;
     }
 
-    .fallback-notice {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      color: #856404;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 10px 0;
-      text-align: center;
+    .success-animation {
+      animation: bounce 0.5s;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 60%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      80% { transform: translateY(-5px); }
     }
   </style>
 </head>
@@ -234,28 +237,13 @@
       <h3>💳 Payment Information</h3>
       <p><strong>UPI ID:</strong> dharneeshdragons@okhdfcbank</p>
       <p><strong>Payee Name:</strong> Fine Graphics</p>
-      <p><strong>Note:</strong> Orders will be saved in our secure database after payment</p>
+      <p><strong>Note:</strong> Scan QR code or use UPI ID to pay. Order will be confirmed after payment.</p>
     </div>
     
     <button id="payBtn" class="btn">Generate QR Code & Pay</button>
     <div id="qrcode"></div>
-    <button id="paidBtn" class="btn btn-secondary" style="display:none;">✅ I Have Paid - Save My Order</button>
+    <button id="paidBtn" class="btn btn-secondary" style="display:none;">✅ I Have Paid - Confirm Order</button>
     <div id="successBox">✅ Payment Successful! Order Saved. Redirecting...</div>
-    
-    <!-- Fallback notice for Render issues -->
-    <div id="fallbackNotice" class="fallback-notice" style="display: none;">
-      <h3>⚠️ Database Connection Issue</h3>
-      <p>We're experiencing temporary database issues. Your order has been saved locally and will be processed shortly.</p>
-      <p>You can still continue with your order.</p>
-    </div>
-    
-    <!-- Debug section -->
-    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none;" id="debugSection">
-      <h3>🔧 Debug Information</h3>
-      <pre id="debugInfo"></pre>
-      <button onclick="testOrderSave()" class="btn" style="background: #ffc107; color: black;">Test Order Save</button>
-      <button onclick="testBackendConnection()" class="btn" style="background: #17a2b8; margin-top: 10px;">Test Backend Connection</button>
-    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -266,11 +254,12 @@
     let subtotal = 0;
     let tax = 0;
     let total = 0;
-    let backendAvailable = true;
 
     // Initialize the payment page
-    async function initPayment() {
+    function initPayment() {
       try {
+        console.log("🚀 Initializing payment page...");
+        
         // Get current user
         const userData = localStorage.getItem("currentUser");
         if (!userData) {
@@ -308,50 +297,21 @@
 
         // Calculate totals from checkout data
         subtotal = checkout.subtotal || checkout.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        tax = checkout.tax || subtotal * 0.18; // 18% GST
+        tax = checkout.tax || subtotal * 0.18;
         total = checkout.total || subtotal + tax;
 
-        // Test backend connection
-        await testBackendConnection();
+        console.log("📊 Order totals:", { subtotal, tax, total });
 
         // Render order items
         renderOrderItems();
         updatePriceBreakdown();
         setupEventListeners();
 
-        // Show debug section if needed
-        if (window.location.search.includes('debug')) {
-          document.getElementById('debugSection').style.display = 'block';
-          updateDebugInfo();
-        }
+        console.log("✅ Payment page initialized successfully");
 
       } catch (error) {
-        console.error("Initialization error:", error);
+        console.error("❌ Initialization error:", error);
         showError("Error loading payment page: " + error.message);
-      }
-    }
-
-    // Test backend connection
-    async function testBackendConnection() {
-      try {
-        console.log("🔍 Testing backend connection...");
-        const response = await fetch('/test-connection', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (response.ok) {
-          backendAvailable = true;
-          console.log("✅ Backend connection successful");
-        } else {
-          backendAvailable = false;
-          console.warn("⚠️ Backend connection failed, using fallback mode");
-          document.getElementById('fallbackNotice').style.display = 'block';
-        }
-      } catch (error) {
-        backendAvailable = false;
-        console.warn("⚠️ Backend connection failed, using fallback mode:", error);
-        document.getElementById('fallbackNotice').style.display = 'block';
       }
     }
 
@@ -379,7 +339,7 @@
       `;
     }
 
-    // Render order items in the container
+    // Render order items
     function renderOrderItems() {
         const orderContainer = document.getElementById("orderContainer");
 
@@ -390,10 +350,8 @@
         }
 
         let orderHTML = '<h2>📦 Your Order Summary</h2>';
-        checkout.items.forEach(item => {
+        checkout.items.forEach((item, index) => {
             const itemSubtotal = item.price * item.quantity;
-            
-            // Check if item has customization
             const hasCustomization = item.placement_position || item.custom_requirements;
             
             orderHTML += `
@@ -406,7 +364,7 @@
                         ${hasCustomization ? `
                             <div style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #007bff;">
                                 <p style="margin: 2px 0; font-size: 14px;"><strong>Customization:</strong></p>
-                                ${item.placement_position ? `<p style="margin: 2px 0; font-size: 14px;">📍 ${item.design_side.toUpperCase()} - ${item.placement_position}</p>` : ''}
+                                ${item.placement_position ? `<p style="margin: 2px 0; font-size: 14px;">📍 ${(item.design_side || 'front').toUpperCase()} - ${item.placement_position}</p>` : ''}
                                 ${(item.design_width > 0 && item.design_height > 0) ? `<p style="margin: 2px 0; font-size: 14px;">📏 ${item.design_width}cm × ${item.design_height}cm</p>` : ''}
                                 ${item.custom_requirements ? `<p style="margin: 2px 0; font-size: 14px;">📝 ${item.custom_requirements}</p>` : ''}
                             </div>
@@ -418,12 +376,13 @@
         });
 
         orderContainer.innerHTML = orderHTML;
-        updateDebugInfo();
     }
 
     // Handle payment process
     function handlePayment() {
       if (!checkout || !currentUser) return;
+
+      console.log("💳 Starting payment process...");
 
       const upiID = "dharneeshdragons@okhdfcbank";
       const payeeName = "Fine Graphics";
@@ -452,7 +411,10 @@
           <img src="${url}" alt="UPI Payment QR Code">
           <p><strong>Amount:</strong> ₹${total.toFixed(2)}</p>
           <p><strong>Includes 18% GST:</strong> ₹${tax.toFixed(2)}</p>
+          <p><em>After payment, click "I Have Paid" below</em></p>
         `;
+
+        console.log("✅ QR Code generated successfully");
       });
 
       // Show "I Have Paid" button
@@ -461,12 +423,13 @@
       
       // Try to open UPI app (mobile devices)
       setTimeout(() => {
+        console.log("📱 Attempting to open UPI app...");
         window.location.href = upiLink;
       }, 1000);
     }
 
-    // IMPROVED: Handle order saving with Render fallback
-    async function handleOrderSave() {
+    // Handle order confirmation (COMPLETELY FRONTEND - NO BACKEND NEEDED)
+    function handleOrderSave() {
         if (!checkout || !currentUser) {
             showError("No order data found. Please try again.");
             return;
@@ -475,13 +438,19 @@
         const username = currentUser.username || currentUser.email;
         const paidBtn = document.getElementById("paidBtn");
         
+        console.log("💾 Saving order for user:", username);
+        
         // Disable button to prevent multiple clicks
         paidBtn.disabled = true;
-        paidBtn.textContent = "💾 Saving Order to Database...";
+        paidBtn.textContent = "💾 Saving Your Order...";
 
         try {
+            // Generate unique order ID
+            const orderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
             // Prepare order data
             const orderData = {
+                order_id: orderId,
                 username: username,
                 items: checkout.items.map(item => ({
                     name: item.name || 'Unknown Design',
@@ -498,101 +467,46 @@
                 tax: tax,
                 total: total,
                 shipping_address: checkout.shipping || {},
-                timestamp: new Date().toISOString(),
-                order_id: 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+                status: 'confirmed',
+                payment_status: 'paid',
+                order_date: new Date().toISOString(),
+                timestamp: Date.now()
             };
 
-            console.log("🔄 Attempting to save order to backend...");
+            console.log("📦 Order data prepared:", orderData);
 
-            let saveSuccess = false;
-            let orderId = orderData.order_id;
+            // Save order to localStorage (COMPLETELY FRONTEND)
+            const userOrdersKey = `user_orders_${username}`;
+            let userOrders = JSON.parse(localStorage.getItem(userOrdersKey) || '[]');
+            
+            // Add new order
+            userOrders.unshift(orderData);
+            localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+            
+            console.log("✅ Order saved to localStorage");
 
-            // Try to save to backend first
-            if (backendAvailable) {
-                try {
-                    const response = await fetch("/saveOrder", {
-                        method: "POST",
-                        headers: { 
-                            "Content-Type": "application/json" 
-                        },
-                        body: JSON.stringify(orderData)
-                    });
+            // Also save to all orders list for admin view
+            const allOrdersKey = 'all_orders';
+            let allOrders = JSON.parse(localStorage.getItem(allOrdersKey) || '[]');
+            allOrders.unshift({
+                ...orderData,
+                user_email: currentUser.email,
+                user_fname: currentUser.fname,
+                user_lname: currentUser.lname
+            });
+            localStorage.setItem(allOrdersKey, JSON.stringify(allOrders));
 
-                    console.log("📡 Backend response status:", response.status);
+            // Clear checkout and cart data
+            const checkoutKey = "checkout_" + username;
+            localStorage.removeItem(checkoutKey);
+            
+            const cartKey = "cart_" + username;
+            localStorage.removeItem(cartKey);
+            
+            console.log("🧹 Checkout and cart data cleared");
 
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log("📦 Backend response:", result);
-                        
-                        if (result.success) {
-                            saveSuccess = true;
-                            orderId = result.order_id || orderId;
-                            console.log("✅ Order saved to backend successfully!");
-                        } else {
-                            console.warn("⚠️ Backend returned error:", result.message);
-                        }
-                    } else {
-                        console.warn("⚠️ Backend request failed with status:", response.status);
-                    }
-                } catch (backendError) {
-                    console.warn("⚠️ Backend save failed, using fallback:", backendError);
-                }
-            }
-
-            // If backend failed or unavailable, save to localStorage as fallback
-            if (!saveSuccess) {
-                console.log("🔄 Using localStorage fallback for order saving...");
-                
-                // Save order to localStorage
-                const userOrdersKey = `user_orders_${username}`;
-                let userOrders = JSON.parse(localStorage.getItem(userOrdersKey) || '[]');
-                
-                // Add order to user's orders
-                userOrders.push({
-                    ...orderData,
-                    status: 'pending',
-                    payment_status: 'paid',
-                    saved_locally: true
-                });
-                
-                localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
-                
-                // Also save to pending orders for admin to process later
-                const pendingOrdersKey = 'pending_orders';
-                let pendingOrders = JSON.parse(localStorage.getItem(pendingOrdersKey) || '[]');
-                pendingOrders.push({
-                    ...orderData,
-                    username: username,
-                    status: 'pending',
-                    needs_sync: true
-                });
-                localStorage.setItem(pendingOrdersKey, JSON.stringify(pendingOrders));
-                
-                saveSuccess = true;
-                console.log("✅ Order saved to localStorage as fallback");
-            }
-
-            if (saveSuccess) {
-                // Clear checkout and cart data
-                const checkoutKey = "checkout_" + username;
-                localStorage.removeItem(checkoutKey);
-                
-                const cartKey = "cart_" + username;
-                localStorage.removeItem(cartKey);
-                
-                // Try to clear cart from database (if available)
-                if (backendAvailable) {
-                    try {
-                        await clearCartFromDatabase(username);
-                    } catch (error) {
-                        console.warn("⚠️ Could not clear cart from database:", error);
-                    }
-                }
-                
-                showSuccess();
-            } else {
-                throw new Error("Failed to save order both to backend and locally");
-            }
+            // Show success
+            showSuccess();
 
         } catch (error) {
             console.error("❌ Error saving order:", error);
@@ -600,100 +514,34 @@
             
             // Re-enable button
             paidBtn.disabled = false;
-            paidBtn.textContent = "🔄 Try Again - Save My Order";
-        }
-    }
-
-    // Clear cart from database
-    async function clearCartFromDatabase(username) {
-        try {
-            const response = await fetch(`/clearCart/${username}`, {
-                method: 'POST'
-            });
-            const result = await response.json();
-            if (result.success) {
-                console.log("✅ Cart cleared from database");
-            } else {
-                console.warn("⚠ Could not clear cart from database:", result.message);
-            }
-        } catch (error) {
-            console.error("❌ Error clearing cart from database:", error);
+            paidBtn.textContent = "✅ I Have Paid - Confirm Order";
         }
     }
 
     // Show success message and redirect
     function showSuccess() {
       const successBox = document.getElementById("successBox");
-      const fallbackNotice = document.getElementById("fallbackNotice");
-      
-      if (!backendAvailable) {
-        successBox.innerHTML = `
+      successBox.innerHTML = `
+        <div class="success-animation">
           ✅ <strong>Payment Successful!</strong><br>
-          📦 Your order has been saved locally<br>
-          ⚠️ Due to temporary issues, your order will be processed shortly<br>
+          📦 Your order has been confirmed<br>
+          📧 Order ID: ${'ORD_' + Date.now()}<br>
           🔄 Redirecting to orders page...
-        `;
-      } else {
-        successBox.innerHTML = `
-          ✅ <strong>Payment Successful!</strong><br>
-          📦 Your order has been saved to our database<br>
-          🔄 Redirecting to orders page...
-        `;
-      }
-      
+        </div>
+      `;
       successBox.style.display = "block";
       
       // Hide other elements
       document.getElementById("payBtn").style.display = "none";
       document.getElementById("paidBtn").style.display = "none";
       document.getElementById("qrcode").style.display = "none";
-      fallbackNotice.style.display = "none";
+      
+      console.log("🎉 Order completed successfully, redirecting...");
       
       // Redirect to orders page after delay
       setTimeout(() => {
         window.location.href = "orders.html";
       }, 3000);
-    }
-
-    // Debug function to check what's in checkout data
-    function updateDebugInfo() {
-        const debugInfo = document.getElementById("debugInfo");
-        if (debugInfo) {
-            debugInfo.textContent = JSON.stringify({
-                currentUser: currentUser ? {
-                    username: currentUser.username,
-                    email: currentUser.email
-                } : null,
-                backendAvailable: backendAvailable,
-                checkout: checkout ? {
-                    itemsCount: checkout.items ? checkout.items.length : 0,
-                    subtotal: subtotal,
-                    tax: tax,
-                    total: total
-                } : null
-            }, null, 2);
-        }
-    }
-
-    // Test backend connection (for debug)
-    async function testBackendConnection() {
-      try {
-        console.log("🧪 Testing backend connection...");
-        const response = await fetch('/test-connection', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        const result = await response.json();
-        alert(`Backend Connection Test:\nStatus: ${response.status}\nResponse: ${JSON.stringify(result)}`);
-      } catch (error) {
-        alert(`Backend Connection Test Failed:\nError: ${error.message}`);
-      }
-    }
-
-    // Test order save function
-    async function testOrderSave() {
-        // ... (keep your existing testOrderSave function)
     }
 
     function setupEventListeners() {
@@ -725,6 +573,10 @@
 
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', initPayment);
+
+    // Add some console styling for better debugging
+    console.log('%c🎨 Fine Graphics Payment System', 'color: #007bff; font-size: 16px; font-weight: bold;');
+    console.log('%c✅ Frontend-only payment processing active', 'color: #28a745;');
   </script>
 </body>
 </html>
