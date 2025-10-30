@@ -8,6 +8,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <script>
+    // Force desktop view only on mobile devices
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        var viewport = document.querySelector("meta[name=viewport]");
+        if (viewport) {
+            viewport.setAttribute('content', 'width=1200, initial-scale=0.5, user-scalable=yes');
+        }
+    }
+</script>
     <style>
         * {
             margin: 0;
@@ -386,6 +395,15 @@
             }
         }
     </style>
+    <script>
+    // Force desktop view only on mobile devices
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        var viewport = document.querySelector("meta[name=viewport]");
+        if (viewport) {
+            viewport.setAttribute('content', 'width=1200, initial-scale=0.5, user-scalable=yes');
+        }
+    }
+</script>
 </head>
 <body>
     <!-- Header -->
@@ -639,19 +657,18 @@
         }
 
         // Show no orders message
-        function showNoOrders() {
-            document.getElementById('ordersContainer').innerHTML = `
-                <div class="empty-orders">
-                    <h3>No orders found</h3>
-                    <p>You haven't placed any orders yet.</p>
-                    <div style="margin-top: 1rem;">
-                        <a href="index.html" class="btn-primary">Start Shopping</a>
-                        <button onclick="debugOrders()" class="btn-debug">Debug Orders</button>
-                        <button onclick="testOrderCreation()" class="btn-debug">Test Order Creation</button>
-                    </div>
-                </div>
-            `;
-        }
+        // Show no orders message
+function showNoOrders() {
+    document.getElementById('ordersContainer').innerHTML = `
+        <div class="empty-orders">
+            <h3>No orders found</h3>
+            <p>You haven't placed any orders yet.</p>
+            <div style="margin-top: 1rem;">
+                <a href="index.html" class="btn-primary">Start Shopping</a>
+            </div>
+        </div>
+    `;
+}
 
         // Show error message
         function showError(message) {
@@ -660,8 +677,6 @@
                     <h3>Error loading orders</h3>
                     <p>${message}</p>
                     <div style="margin-top: 1rem;">
-                        <button class="btn-primary" onclick="loadOrders()">Retry</button>
-                        <button onclick="debugOrders()" class="btn-debug">Debug</button>
                         <button onclick="window.location.href='index.html'" class="btn-primary" style="background: #6c757d;">Go Home</button>
                     </div>
                 </div>
@@ -776,9 +791,6 @@
             if (currentUser) {
                 authButtons.innerHTML = `
                     <div class="user-info">
-                        <img src="${currentUser.profile_pic || 'https://via.placeholder.com/40'}" 
-                             alt="Profile" class="user-avatar">
-                        <span class="user-name">${currentUser.username}</span>
                         <div class="cart-badge">
                             <a href="cart.html" style="color: white; text-decoration: none;">🛒 Cart</a>
                             <span class="badge" id="cartCount">0</span>

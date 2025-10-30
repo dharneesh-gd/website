@@ -4,8 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fine Graphics - Premium Design Services</title>
+    <script>
+    // Force desktop view only on mobile devices
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        var viewport = document.querySelector("meta[name=viewport]");
+        if (viewport) {
+            viewport.setAttribute('content', 'width=1200, initial-scale=0.5, user-scalable=yes');
+        }
+    }
+</script>
     <style>
-        /* Your existing CSS styles */
+        /* fix the ui suitable for mobile*/
         * {
             margin: 0;
             padding: 0;
@@ -206,7 +215,18 @@
     line-height: 1.4;
     margin-bottom: 0;
 }
-
+/* Add to existing CSS */
+.price-preview {
+    font-weight: bold;
+    color: #28a745;
+    font-size: 16px;
+    margin: 8px 0;
+    text-align: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+}
 /* Image Preview Modal Styles */
 .image-modal-content {
     max-width: 800px;
@@ -690,11 +710,12 @@
 
         /* User Info */
         .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            color: white;
-        }
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Reduced gap */
+    color: white;
+    flex-wrap: wrap;
+}
 
         .user-avatar {
             width: 40px;
@@ -885,7 +906,15 @@
             cursor: pointer;
             font-size: 0.9rem;
         }
-
+        .cart-profile {
+            background: #0077ff;
+            color: rgb(255, 255, 255);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
         .btn-profile:hover {
             background: #138496;
         }
@@ -1366,43 +1395,45 @@
                     image_type: design.image_type || ''
                 };
 
-                designsHTML += `
+     // In the renderDesigns function, remove the price line
+designsHTML += `
     <div class="design-card" data-design-id="${design.id}">
         <img src="${imageSrc}" 
              alt="${design.name}" 
              class="design-image" 
              onclick="openImagePreview('${encodeURIComponent(JSON.stringify(safeDesign))}')">
-                        <div class="design-info">
-                            <div class="design-name">${design.name}</div>
-                            <div class="design-category">${design.category || 'General'}</div>
-                            <div class="design-price">₹${design.price}</div>
-                            <div class="design-description">${design.description || 'No description available.'}</div>
-                            <div class="design-actions">
-                                <button class="btn-cart ${cartButtonClass}" 
-                                        onclick="${cartOnClick}"
-                                        title="${!isLoggedIn ? 'Please login to add to cart' : (!hasCompleteProfile ? 'Please complete your profile first' : '')}">
-                                    ${cartButtonText}
-                                </button>
-                                <button class="btn-wishlist ${wishlistButtonClass}" 
-                                        onclick="${wishlistOnClick}"
-                                        title="${!isLoggedIn ? 'Please login to add to wishlist' : (!hasCompleteProfile ? 'Please complete your profile first' : '')}">
-                                    ${wishlistButtonText}
-                                </button>
-                            </div>
-                            ${!isLoggedIn ? `
-                                <div class="login-required-message">
-                                    <p>🔐 Please login to manage your cart and wishlist</p>
-                                    <a href="login.html" class="btn-login-small">Login Now</a>
-                                </div>
-                            ` : (!hasCompleteProfile ? `
-                                <div class="profile-required-message">
-                                    <p>📝 Please complete your profile with address, mobile, and district to start shopping</p>
-                                    <button class="btn-profile-small" onclick="openUpdateProfileModal()">Complete Profile</button>
-                                </div>
-                            ` : '')}
-                        </div>
-                    </div>
-                `;
+        <div class="design-info">
+            <div class="design-name">${design.name}</div>
+            <div class="design-category">${design.category || 'General'}</div>
+            <!-- REMOVE THIS PRICE LINE: -->
+            <!-- <div class="design-price">₹${design.price}</div> -->
+            <div class="design-description">${design.description || 'No description available.'}</div>
+            <div class="design-actions">
+                <button class="btn-cart ${cartButtonClass}" 
+                        onclick="${cartOnClick}"
+                        title="${!isLoggedIn ? 'Please login to add to cart' : (!hasCompleteProfile ? 'Please complete your profile first' : '')}">
+                    ${cartButtonText}
+                </button>
+                <button class="btn-wishlist ${wishlistButtonClass}" 
+                        onclick="${wishlistOnClick}"
+                        title="${!isLoggedIn ? 'Please login to add to wishlist' : (!hasCompleteProfile ? 'Please complete your profile first' : '')}">
+                    ${wishlistButtonText}
+                </button>
+            </div>
+            ${!isLoggedIn ? `
+                <div class="login-required-message">
+                    <p>🔐 Please login to manage your cart and wishlist</p>
+                    <a href="login.html" class="btn-login-small">Login Now</a>
+                </div>
+            ` : (!hasCompleteProfile ? `
+                <div class="profile-required-message">
+                    <p>📝 Please complete your profile with address, mobile, and district to start shopping</p>
+                    <button class="btn-profile-small" onclick="openUpdateProfileModal()">Complete Profile</button>
+                </div>
+            ` : '')}
+        </div>
+    </div>
+`;
             });
 
             designsHTML += '</div>';
@@ -1450,56 +1481,65 @@
         }
 
         function handleCustomizationSubmit(event) {
-            event.preventDefault();
-            
-            if (!currentCustomizationDesign) {
-                showNotification('No design selected for customization', 'remove');
-                return;
-            }
+    event.preventDefault();
+    
+    if (!currentCustomizationDesign) {
+        showNotification('No design selected for customization', 'remove');
+        return;
+    }
 
-            // Get form values
-            const designSide = document.getElementById('designSide').value;
-            const placementPosition = document.getElementById('placementPosition').value;
-            const designWidth = parseInt(document.getElementById('designWidth').value) || 0;
-            const designHeight = parseInt(document.getElementById('designHeight').value) || 0;
-            const customRequirements = document.getElementById('customRequirements').value.trim();
+    // Get form values
+    const designSide = document.getElementById('designSide').value;
+    const placementPosition = document.getElementById('placementPosition').value;
+    const designWidth = parseInt(document.getElementById('designWidth').value) || 0;
+    const designHeight = parseInt(document.getElementById('designHeight').value) || 0;
+    const customRequirements = document.getElementById('customRequirements').value.trim();
 
-            // Validation
-            if (!designSide) {
-                showNotification('Please select design side', 'remove');
-                return;
-            }
+    // Validation
+    if (!designSide) {
+        showNotification('Please select design side', 'remove');
+        return;
+    }
 
-            if (!placementPosition) {
-                showNotification('Please select placement position', 'remove');
-                return;
-            }
+    if (!placementPosition) {
+        showNotification('Please select placement position', 'remove');
+        return;
+    }
 
-            if (designWidth <= 0 || designHeight <= 0) {
-                showNotification('Please enter valid dimensions (greater than 0)', 'remove');
-                return;
-            }
+    if (designWidth <= 0 || designHeight <= 0) {
+        showNotification('Please enter valid dimensions (greater than 0)', 'remove');
+        return;
+    }
 
-            // Add to cart with customization
-            addToCartWithCustomization(
-                currentCustomizationDesign.name,
-                currentCustomizationDesign.price,
-                currentCustomizationDesign.image,
-                designSide,
-                placementPosition,
-                designWidth,
-                designHeight,
-                customRequirements
-            );
+    // Calculate price
+    const calculatedPrice = designWidth * designHeight * 10;
+    
+    // Show price confirmation
+    if (!confirm(`Price for ${designWidth}cm × ${designHeight}cm design: ₹${calculatedPrice}\n\nClick OK to add to cart.`)) {
+        return;
+    }
 
-            // Close modal
-            closeCustomizationModal();
-        }
+    // Add to cart with customization and calculated price
+    addToCartWithCustomization(
+        currentCustomizationDesign.name,
+        calculatedPrice, // Pass calculated price instead of design price
+        currentCustomizationDesign.image,
+        designSide,
+        placementPosition,
+        designWidth,
+        designHeight,
+        customRequirements
+    );
+
+    // Close modal
+    closeCustomizationModal();
+}
 
         // Add to cart with customization data
         // Fix the addToCartWithCustomization function
 // Add to cart with customization - FIXED VERSION
-function addToCartWithCustomization(designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements) {
+// Add to cart with customization - UPDATED WITH PRICE CALCULATION
+function addToCartWithCustomization(designName, basePrice, image, designSide, placementPosition, designWidth, designHeight, customRequirements) {
     if (!currentUser) {
         showLoginRequired();
         return;
@@ -1510,8 +1550,18 @@ function addToCartWithCustomization(designName, price, image, designSide, placem
         return;
     }
 
-    console.log('🎯 Adding to cart:', {
-        designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements
+    // Calculate price based on dimensions: width × height × 10
+    const calculatedPrice = designWidth * designHeight * 10;
+    
+    console.log('🎯 Adding to cart with calculated price:', {
+        designName, 
+        basePrice, // This is the original price from design (if any, but we'll ignore it)
+        calculatedPrice, // This is the actual price we'll use
+        designWidth, 
+        designHeight, 
+        designSide, 
+        placementPosition, 
+        customRequirements
     });
 
     const existingItemIndex = cart.findIndex(item => item.name === designName);
@@ -1521,22 +1571,23 @@ function addToCartWithCustomization(designName, price, image, designSide, placem
         cart.splice(existingItemIndex, 1);
         showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
     } else {
-        // Item not in cart - ADD it with customization
+        // Item not in cart - ADD it with customization and calculated price
         const cartItem = {
             name: designName,
-            price: parseFloat(price),
+            price: calculatedPrice, // Use calculated price instead of base price
             quantity: 1,
             image: image,
             placement_position: placementPosition,
             design_side: designSide,
             design_width: parseInt(designWidth),
             design_height: parseInt(designHeight),
-            custom_requirements: customRequirements
+            custom_requirements: customRequirements,
+            calculated_price: calculatedPrice // Store for reference
         };
         
         console.log('🛒 Cart item being added:', cartItem);
         cart.push(cartItem);
-        showNotification(`✅ ${designName} added to cart with customization!`, 'success');
+        showNotification(`✅ ${designName} added to cart! Price: ₹${calculatedPrice}`, 'success');
     }
 
     // Save and sync
@@ -1547,7 +1598,6 @@ function addToCartWithCustomization(designName, price, image, designSide, placem
     // Force sync to database
     syncCartToDatabase().then(() => {
         console.log('🔄 Cart sync completed');
-        // Verify cart was saved
         verifyCartSaved();
     });
 }
@@ -1816,22 +1866,19 @@ async function syncCartToDatabase() {
             
             if (currentUser) {
                 authButtons.innerHTML = `
-                    <div class="user-info">
-                        <img src="${currentUser.profile_pic || 'https://via.placeholder.com/40'}" 
-                             alt="Profile" class="user-avatar">
-                        <span class="user-name">${currentUser.username}</span>
-                        <div class="cart-badge">
-                            <a href="cart.html" style="color: white; text-decoration: none;">🛒 Cart</a>
-                            <span class="badge" id="cartCount">0</span>
-                        </div>
-                        <div class="wishlist-badge">
-                            <a href="wishlist.html" style="color: white; text-decoration: none;">❤️ Wishlist</a>
-                            <span class="badge" id="wishlistCount">0</span>
-                        </div>
-                        <button class="btn-profile" onclick="openUpdateProfileModal()">👤 Profile</button>
-                        <button class="logout-btn" onclick="logout()">Logout</button>
-                    </div>
-                `;
+    <div class="user-info">
+        <div class="cart-badge">
+            <button class="cart-profile" onclick="window.location.href='cart.html'"> 🛒 Cart</button>
+            <span class="badge" id="cartCount">0</span>
+        </div>
+        <div class="wishlist-badge">
+            <button class="cart-profile" onclick="window.location.href='wishlist.html'">❤️ Wishlist</button>
+            <span class="badge" id="wishlistCount">0</span>
+        </div>
+        <button class="btn-profile" onclick="window.location.href='profile.html'">👤 profile</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+`;
             } else {
                 authButtons.innerHTML = `
                     <a href="login.html" class="btn btn-login">Login</a>
@@ -2429,26 +2476,52 @@ function switchPreviewImage(imageSrc, element) {
 
 <script>
     // Update customization preview in real-time
-    document.addEventListener('DOMContentLoaded', function() {
-        const designSide = document.getElementById('designSide');
-        const placementPosition = document.getElementById('placementPosition');
-        const designWidth = document.getElementById('designWidth');
-        const designHeight = document.getElementById('designHeight');
-        const customRequirements = document.getElementById('customRequirements');
+    // Update customization preview in real-time with price calculation
+document.addEventListener('DOMContentLoaded', function() {
+    const designSide = document.getElementById('designSide');
+    const placementPosition = document.getElementById('placementPosition');
+    const designWidth = document.getElementById('designWidth');
+    const designHeight = document.getElementById('designHeight');
+    const customRequirements = document.getElementById('customRequirements');
+    
+    function updateCustomizationPreview() {
+        const width = parseInt(designWidth.value) || 0;
+        const height = parseInt(designHeight.value) || 0;
+        const calculatedPrice = width * height * 10;
         
-        function updateCustomizationPreview() {
-            document.getElementById('previewSide').textContent = `Side: ${designSide.value || 'Not selected'}`;
-            document.getElementById('previewPosition').textContent = `Position: ${placementPosition.value || 'Not selected'}`;
-            document.getElementById('previewSize').textContent = `Size: ${designWidth.value && designHeight.value ? `${designWidth.value}cm × ${designHeight.value}cm` : 'Not specified'}`;
-            document.getElementById('previewRequirements').textContent = `Requirements: ${customRequirements.value || 'None'}`;
+        document.getElementById('previewSide').textContent = `Side: ${designSide.value || 'Not selected'}`;
+        document.getElementById('previewPosition').textContent = `Position: ${placementPosition.value || 'Not selected'}`;
+        document.getElementById('previewSize').textContent = `Size: ${width && height ? `${width}cm × ${height}cm` : 'Not specified'}`;
+        document.getElementById('previewRequirements').textContent = `Requirements: ${customRequirements.value || 'None'}`;
+        
+        // Update price in the preview
+        const priceElement = document.getElementById('previewPrice') || (function() {
+            const elem = document.createElement('p');
+            elem.id = 'previewPrice';
+            elem.className = 'price-preview';
+            elem.style.cssText = 'font-weight: bold; color: #28a745; font-size: 16px; margin: 8px 0;';
+            document.querySelector('.customization-preview').appendChild(elem);
+            return elem;
+        })();
+        
+        if (width > 0 && height > 0) {
+            priceElement.textContent = `Calculated Price: ₹${calculatedPrice}`;
+            priceElement.style.color = '#28a745';
+        } else {
+            priceElement.textContent = 'Price: Enter dimensions to calculate';
+            priceElement.style.color = '#dc3545';
         }
-        
-        designSide.addEventListener('change', updateCustomizationPreview);
-        placementPosition.addEventListener('change', updateCustomizationPreview);
-        designWidth.addEventListener('input', updateCustomizationPreview);
-        designHeight.addEventListener('input', updateCustomizationPreview);
-        customRequirements.addEventListener('input', updateCustomizationPreview);
-    });
+    }
+    
+    designSide.addEventListener('change', updateCustomizationPreview);
+    placementPosition.addEventListener('change', updateCustomizationPreview);
+    designWidth.addEventListener('input', updateCustomizationPreview);
+    designHeight.addEventListener('input', updateCustomizationPreview);
+    customRequirements.addEventListener('input', updateCustomizationPreview);
+    
+    // Initial update
+    updateCustomizationPreview();
+});
 </script>
 </body>
 </html>

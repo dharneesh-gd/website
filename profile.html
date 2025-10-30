@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Update Profile - Fine Graphics</title>
+  <script>
+    // Force desktop view only on mobile devices
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        var viewport = document.querySelector("meta[name=viewport]");
+        if (viewport) {
+            viewport.setAttribute('content', 'width=1200, initial-scale=0.5, user-scalable=yes');
+        }
+    }
+  </script>
   <style>
     body { 
       font-family: Arial, sans-serif; 
@@ -11,28 +20,45 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
-      height: 100vh; 
+      min-height: 100vh; 
       margin: 0;
+      padding: 20px;
     }
     .box { 
       background: white; 
       padding: 30px; 
       border-radius: 10px; 
       box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
-      width: 400px; 
+      width: 100%;
+      max-width: 500px; 
     }
     h2 { 
       text-align: center; 
       color: #007bff; 
       margin-bottom: 20px;
     }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
     input, select { 
       width: 100%; 
       padding: 12px; 
-      margin: 8px 0; 
+      margin: 5px 0;
       border: 1px solid #ccc; 
       border-radius: 5px; 
       box-sizing: border-box;
+      font-size: 14px;
+    }
+    input:read-only {
+      background-color: #f8f9fa;
+      color: #6c757d;
+      cursor: not-allowed;
     }
     button { 
       width: 100%; 
@@ -44,6 +70,7 @@
       cursor: pointer; 
       font-size: 16px;
       margin-top: 10px;
+      transition: background 0.3s;
     }
     button:hover { 
       background: #0056b3; 
@@ -51,8 +78,8 @@
     .profile-preview {
       display: block;
       margin: 10px auto;
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       object-fit: cover;
       border: 3px solid #007bff;
@@ -68,43 +95,115 @@
     .back-btn:hover {
       background: #545b62;
     }
+    .user-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .user-info p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .field-note {
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 3px;
+    }
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      text-align: center;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="box">
     <h2>Update Profile</h2>
     
+    <div class="success-message" id="successMessage"></div>
+    
+    <!-- User Information Summary -->
+    <div class="user-info">
+      <h3 style="margin-top: 0; color: #495057;">Your Profile Information</h3>
+      <p><strong>Name:</strong> <span id="displayName">Loading...</span></p>
+      <p><strong>Email:</strong> <span id="displayEmail">Loading...</span></p>
+      <p><strong>Username:</strong> <span id="displayUsername">Loading...</span></p>
+      <p><strong>Member Since:</strong> <span id="displayJoinDate">Loading...</span></p>
+    </div>
+    
+    <!-- Profile Picture Section -->
     <div style="text-align: center;">
-      <img id="previewPic" src="https://via.placeholder.com/100" alt="Profile Preview" class="profile-preview">
+      <img id="previewPic" src="https://via.placeholder.com/120" alt="Profile Preview" class="profile-preview">
       <div class="file-input-container">
         <input type="file" id="profilePicInput" accept="image/*">
-        <small>Click to upload profile picture</small>
+        <div class="field-note">Click to upload profile picture (Max: 2MB)</div>
       </div>
     </div>
     
-    <input type="text" id="fname" placeholder="First Name" readonly>
-    <input type="text" id="lname" placeholder="Last Name" readonly>
-    <input type="email" id="email" placeholder="Email" readonly>
-    <input type="text" id="username" placeholder="Username" readonly>
-    <input type="text" id="address" placeholder="Address">
-    <input type="text" id="mobile" placeholder="Mobile Number" maxlength="10">
-    <select id="district">
-      <option value="">Select District</option>
-      <option value="Tirupur">Tirupur</option>
-      <option value="Coimbatore">Coimbatore</option>
-      <option value="Erode">Erode</option>
-      <option value="Chennai">Chennai</option>
-      <option value="Bangalore">Bangalore</option>
-    </select>
+    <!-- Editable Profile Fields -->
+    <div class="form-group">
+      <label for="fname">First Name</label>
+      <input type="text" id="fname" placeholder="First Name" readonly>
+    </div>
     
-    <button onclick="saveProfile()">Save Profile</button>
+    <div class="form-group">
+      <label for="lname">Last Name</label>
+      <input type="text" id="lname" placeholder="Last Name" readonly>
+    </div>
+    
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="Email" readonly>
+      <div class="field-note">Contact support to change your email</div>
+    </div>
+    
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Username" readonly>
+      <div class="field-note">Username cannot be changed</div>
+    </div>
+    
+    <div class="form-group">
+      <label for="address">Address</label>
+      <input type="text" id="address" placeholder="Enter your complete address">
+    </div>
+    
+    <div class="form-group">
+      <label for="mobile">Mobile Number</label>
+      <input type="text" id="mobile" placeholder="Enter 10-digit mobile number" maxlength="10">
+    </div>
+    
+    <div class="form-group">
+      <label for="district">District</label>
+      <select id="district">
+        <option value="">Select District</option>
+        <option value="Tirupur">Tirupur</option>
+        <option value="Coimbatore">Coimbatore</option>
+        <option value="Erode">Erode</option>
+        <option value="Chennai">Chennai</option>
+        <option value="Bangalore">Bangalore</option>
+        <option value="Madurai">Madurai</option>
+        <option value="Salem">Salem</option>
+        <option value="Trichy">Trichy</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    
+    <button onclick="saveProfile()">Save Profile Changes</button>
     <button class="back-btn" onclick="goBack()">Back to Home</button>
   </div>
 
   <script>
     let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
     let profilePicBase64 = "";
+    let originalUserData = null;
 
+    // Redirect to login if not authenticated
     if (!currentUser) {
       alert("Please login first!");
       window.location.href = "login.html";
@@ -113,6 +212,10 @@
     // Load current user data
     function loadUserProfile() {
       if (currentUser) {
+        // Store original data for comparison
+        originalUserData = {...currentUser};
+        
+        // Set form values
         document.getElementById("fname").value = currentUser.fname || "";
         document.getElementById("lname").value = currentUser.lname || "";
         document.getElementById("email").value = currentUser.email || "";
@@ -121,10 +224,20 @@
         document.getElementById("mobile").value = currentUser.mobile || "";
         document.getElementById("district").value = currentUser.district || "";
         
+        // Update summary section
+        document.getElementById("displayName").textContent = `${currentUser.fname || ''} ${currentUser.lname || ''}`.trim();
+        document.getElementById("displayEmail").textContent = currentUser.email || 'Not provided';
+        document.getElementById("displayUsername").textContent = currentUser.username || 'Not provided';
+        document.getElementById("displayJoinDate").textContent = currentUser.created_at ? 
+          new Date(currentUser.created_at).toLocaleDateString() : 'Recently';
+        
         // Set profile picture
         if (currentUser.profile_pic && currentUser.profile_pic !== "https://via.placeholder.com/80") {
           document.getElementById("previewPic").src = currentUser.profile_pic;
+          profilePicBase64 = currentUser.profile_pic;
         }
+        
+        console.log("Profile loaded:", currentUser);
       }
     }
 
@@ -134,13 +247,15 @@
       if (file) {
         // Validate file type
         if (!file.type.startsWith('image/')) {
-          alert('Please select an image file');
+          alert('Please select an image file (JPEG, PNG, etc.)');
+          this.value = '';
           return;
         }
         
         // Validate file size (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
           alert('Image size should be less than 2MB');
+          this.value = '';
           return;
         }
         
@@ -152,6 +267,30 @@
         reader.readAsDataURL(file);
       }
     });
+
+    // Check if profile has changes
+    function hasProfileChanges() {
+      if (!originalUserData) return false;
+      
+      const address = document.getElementById("address").value.trim();
+      const mobile = document.getElementById("mobile").value.trim();
+      const district = document.getElementById("district").value;
+      
+      return address !== originalUserData.address || 
+             mobile !== originalUserData.mobile || 
+             district !== originalUserData.district ||
+             (profilePicBase64 && profilePicBase64 !== originalUserData.profile_pic);
+    }
+
+    // Show success message
+    function showSuccessMessage(message) {
+      const successEl = document.getElementById("successMessage");
+      successEl.textContent = message;
+      successEl.style.display = 'block';
+      setTimeout(() => {
+        successEl.style.display = 'none';
+      }, 5000);
+    }
 
     async function saveProfile() {
       let address = document.getElementById("address").value.trim();
@@ -179,9 +318,16 @@
         return;
       }
 
+      // Check if there are actual changes
+      if (!hasProfileChanges()) {
+        alert("No changes detected to save.");
+        return;
+      }
+
       // Show loading state
       const saveBtn = document.querySelector('button[onclick="saveProfile()"]');
-      saveBtn.textContent = 'Saving...';
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = 'Saving Changes...';
       saveBtn.disabled = true;
 
       try {
@@ -210,16 +356,17 @@
           // Update local storage with new data
           const updatedUser = {
             ...currentUser,
-            address: result.address,
-            mobile: result.mobile,
-            district: result.district,
-            profile_pic: result.profile_pic
+            address: result.address || address,
+            mobile: result.mobile || mobile,
+            district: result.district || district,
+            profile_pic: result.profile_pic || profilePicBase64
           };
           
           localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+          currentUser = updatedUser;
           
-          alert("✅ Profile updated successfully!");
-          window.location.href = "index.html";
+          showSuccessMessage("✅ Profile updated successfully!");
+          loadUserProfile(); // Reload to update original data
         } else {
           alert("❌ Error: " + (result.error || "Failed to update profile"));
         }
@@ -228,17 +375,31 @@
         alert("⚠ Network error. Please check your connection and try again.");
       } finally {
         // Reset button state
-        saveBtn.textContent = 'Save Profile';
+        saveBtn.textContent = originalText;
         saveBtn.disabled = false;
       }
     }
 
     function goBack() {
-      window.location.href = "index.html";
+      if (hasProfileChanges()) {
+        if (confirm("You have unsaved changes. Are you sure you want to leave?")) {
+          window.location.href = "index.html";
+        }
+      } else {
+        window.location.href = "index.html";
+      }
     }
 
+    // Warn before leaving if there are unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+      if (hasProfileChanges()) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
     // Load profile when page loads
-    loadUserProfile();
+    document.addEventListener('DOMContentLoaded', loadUserProfile);
   </script>
 </body>
 </html>

@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment - Fine Graphics</title>
+  <script>
+    // Force desktop view only on mobile devices
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        var viewport = document.querySelector("meta[name=viewport]");
+        if (viewport) {
+            viewport.setAttribute('content', 'width=1200, initial-scale=0.5, user-scalable=yes');
+        }
+    }
+</script>
   <style>
     /* Your existing CSS styles remain the same */
     body { 
@@ -157,6 +166,28 @@
       margin: 5px 0;
       font-size: 16px;
     }
+
+    .price-breakdown {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    
+    .price-line {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    
+    .price-total {
+      border-top: 2px solid #007bff;
+      padding-top: 10px;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 20px;
+    }
   </style>
 </head>
 <body>
@@ -168,10 +199,29 @@
   </div>
   
   <div class="container">
-    <div class="totalBox" id="grandTotal">Total: ₹0</div>
+    <!-- Price Breakdown with GST -->
+    <div class="price-breakdown" id="priceBreakdown">
+      <h3>💰 Price Breakdown</h3>
+      <div class="price-line">
+        <span>Subtotal:</span>
+        <span>₹0.00</span>
+      </div>
+      <div class="price-line">
+        <span>Shipping:</span>
+        <span>₹0.00</span>
+      </div>
+      <div class="price-line">
+        <span>GST (18%):</span>
+        <span>₹0.00</span>
+      </div>
+      <div class="price-line price-total">
+        <span>Total Amount:</span>
+        <span>₹0.00</span>
+      </div>
+    </div>
     
     <div class="upi-details">
-      <h3>💰 Payment Information</h3>
+      <h3>💳 Payment Information</h3>
       <p><strong>UPI ID:</strong> dharneeshdragons@okhdfcbank</p>
       <p><strong>Payee Name:</strong> Fine Graphics</p>
       <p><strong>Note:</strong> Orders will be saved in our secure database after payment</p>
@@ -195,6 +245,8 @@
     // Get current user from localStorage
     let currentUser = null;
     let checkout = null;
+    let subtotal = 0;
+    let tax = 0;
     let total = 0;
 
     // Initialize the payment page
@@ -235,8 +287,14 @@
           return;
         }
 
+        // Calculate totals from checkout data
+        subtotal = checkout.subtotal || checkout.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        tax = checkout.tax || subtotal * 0.18; // 18% GST
+        total = checkout.total || subtotal + tax;
+
         // Render order items
         renderOrderItems();
+        updatePriceBreakdown();
         setupEventListeners();
 
         // Show debug section if needed
@@ -251,10 +309,33 @@
       }
     }
 
+    // Update price breakdown display
+    function updatePriceBreakdown() {
+      const breakdown = document.getElementById("priceBreakdown");
+      breakdown.innerHTML = `
+        <h3>💰 Price Breakdown</h3>
+        <div class="price-line">
+          <span>Subtotal:</span>
+          <span>₹${subtotal.toFixed(2)}</span>
+        </div>
+        <div class="price-line">
+          <span>Shipping:</span>
+          <span>₹0.00</span>
+        </div>
+        <div class="price-line">
+          <span>GST (18%):</span>
+          <span>₹${tax.toFixed(2)}</span>
+        </div>
+        <div class="price-line price-total">
+          <span>Total Amount:</span>
+          <span>₹${total.toFixed(2)}</span>
+        </div>
+      `;
+    }
+
     // Render order items in the container - UPDATED WITH CUSTOMIZATION DISPLAY
     function renderOrderItems() {
         const orderContainer = document.getElementById("orderContainer");
-        total = 0;
 
         if (!checkout || !checkout.items || checkout.items.length === 0) {
             orderContainer.innerHTML = "<div class='error'>No items found for payment.</div>";
@@ -264,8 +345,7 @@
 
         let orderHTML = '<h2>📦 Your Order Summary</h2>';
         checkout.items.forEach(item => {
-            const subtotal = item.price * item.quantity;
-            total += subtotal;
+            const itemSubtotal = item.price * item.quantity;
             
             // Check if item has customization
             const hasCustomization = item.placement_position || item.custom_requirements;
@@ -285,14 +365,13 @@
                                 ${item.custom_requirements ? `<p style="margin: 2px 0; font-size: 14px;">📝 ${item.custom_requirements}</p>` : ''}
                             </div>
                         ` : ''}
-                        <p><strong>Subtotal:</strong> ₹${subtotal}</p>
+                        <p><strong>Subtotal:</strong> ₹${itemSubtotal.toFixed(2)}</p>
                     </div>
                 </div>
             `;
         });
 
         orderContainer.innerHTML = orderHTML;
-        document.getElementById("grandTotal").textContent = "Total Amount: ₹" + total;
         
         // Update debug info
         updateDebugInfo();
@@ -327,7 +406,8 @@
         qrContainer.innerHTML = `
           <h3>📱 Scan QR Code to Pay</h3>
           <img src="${url}" alt="UPI Payment QR Code">
-          <p><strong>Amount:</strong> ₹${total}</p>
+          <p><strong>Amount:</strong> ₹${total.toFixed(2)}</p>
+          <p><strong>Includes 18% GST:</strong> ₹${tax.toFixed(2)}</p>
         `;
       });
 
@@ -341,94 +421,89 @@
       }, 1000);
     }
 
-    // FIXED: Handle order saving after payment - CORRECTED VERSION
-    // IMPROVED: Handle order saving after payment
-async function handleOrderSave() {
-    if (!checkout || !currentUser) {
-        showError("No order data found. Please try again.");
-        return;
-    }
-
-    const username = currentUser.username || currentUser.email;
-    const paidBtn = document.getElementById("paidBtn");
-    
-    // Disable button to prevent multiple clicks
-    paidBtn.disabled = true;
-    paidBtn.textContent = "💾 Saving Order to Database...";
-
-    try {
-        // Prepare order data for backend - INCLUDING CUSTOMIZATION FIELDS
-        const orderData = {
-            username: username,
-            items: checkout.items.map(item => ({
-                name: item.name || 'Unknown Design',
-                price: parseFloat(item.price) || 0,
-                quantity: parseInt(item.quantity) || 1,
-                image: item.image || 'https://via.placeholder.com/80',
-                // ADD CUSTOMIZATION FIELDS
-                placement_position: item.placement_position || '',
-                design_side: item.design_side || 'front',
-                design_width: parseInt(item.design_width) || 0,
-                design_height: parseInt(item.design_height) || 0,
-                custom_requirements: item.custom_requirements || ''
-            }))
-        };
-
-        console.log("🔄 Sending order to database:", orderData);
-
-        // First, fix the orders table structure
-        console.log("🔧 Fixing orders table structure...");
-        const fixResponse = await fetch("/admin/fix-orders-table", {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json" 
-            }
-        });
-        
-        const fixResult = await fixResponse.json();
-        console.log("🔧 Fix table result:", fixResult);
-
-        // Send order to backend with error handling
-        const response = await fetch("/saveOrder", {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify(orderData)
-        });
-
-        console.log("📡 Response status:", response.status);
-
-        const result = await response.json();
-        console.log("📦 Backend response:", result);
-        
-        if (result.success) {
-            // Order saved successfully to orders database
-            console.log("✅ Order saved successfully! Order ID:", result.order_id);
-            
-            const checkoutKey = "checkout_" + username;
-            localStorage.removeItem(checkoutKey); // Clear checkout data
-            
-            // Clear cart as well since order is confirmed
-            const cartKey = "cart_" + username;
-            localStorage.removeItem(cartKey);
-            
-            // Also clear cart from database
-            await clearCartFromDatabase(username);
-            
-            showSuccess();
-        } else {
-            throw new Error(result.message || "Failed to save order to database");
+    // IMPROVED: Handle order saving after payment - FIXED VERSION
+    async function handleOrderSave() {
+        if (!checkout || !currentUser) {
+            showError("No order data found. Please try again.");
+            return;
         }
-    } catch (error) {
-        console.error("❌ Error saving order:", error);
-        showError("Failed to save order: " + error.message);
+
+        const username = currentUser.username || currentUser.email;
+        const paidBtn = document.getElementById("paidBtn");
         
-        // Re-enable button
-        paidBtn.disabled = false;
-        paidBtn.textContent = "🔄 Try Again - Save My Order";
+        // Disable button to prevent multiple clicks
+        paidBtn.disabled = true;
+        paidBtn.textContent = "💾 Saving Order to Database...";
+
+        try {
+            // Prepare order data for backend - INCLUDING CUSTOMIZATION FIELDS AND PRICE DETAILS
+            const orderData = {
+                username: username,
+                items: checkout.items.map(item => ({
+                    name: item.name || 'Unknown Design',
+                    price: parseFloat(item.price) || 0,
+                    quantity: parseInt(item.quantity) || 1,
+                    image: item.image || 'https://via.placeholder.com/80',
+                    // ADD CUSTOMIZATION FIELDS
+                    placement_position: item.placement_position || '',
+                    design_side: item.design_side || 'front',
+                    design_width: parseInt(item.design_width) || 0,
+                    design_height: parseInt(item.design_height) || 0,
+                    custom_requirements: item.custom_requirements || ''
+                })),
+                subtotal: subtotal,
+                tax: tax,
+                total: total,
+                shipping_address: checkout.shipping || {}
+            };
+
+            console.log("🔄 Sending order to database:", orderData);
+
+            // Send order to backend with error handling
+            const response = await fetch("/saveOrder", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json" 
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            console.log("📡 Response status:", response.status);
+
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log("📦 Backend response:", result);
+            
+            if (result.success) {
+                // Order saved successfully to orders database
+                console.log("✅ Order saved successfully! Order ID:", result.order_id);
+                
+                const checkoutKey = "checkout_" + username;
+                localStorage.removeItem(checkoutKey); // Clear checkout data
+                
+                // Clear cart as well since order is confirmed
+                const cartKey = "cart_" + username;
+                localStorage.removeItem(cartKey);
+                
+                // Also clear cart from database
+                await clearCartFromDatabase(username);
+                
+                showSuccess();
+            } else {
+                throw new Error(result.message || "Failed to save order to database");
+            }
+        } catch (error) {
+            console.error("❌ Error saving order:", error);
+            showError("Failed to save order: " + error.message);
+            
+            // Re-enable button
+            paidBtn.disabled = false;
+            paidBtn.textContent = "🔄 Try Again - Save My Order";
+        }
     }
-}
 
     // Clear cart from database after successful order
     async function clearCartFromDatabase(username) {
@@ -479,6 +554,8 @@ async function handleOrderSave() {
                 } : null,
                 checkout: checkout ? {
                     itemsCount: checkout.items ? checkout.items.length : 0,
+                    subtotal: subtotal,
+                    tax: tax,
                     total: total,
                     sampleItem: checkout.items && checkout.items[0] ? {
                         name: checkout.items[0].name,
@@ -515,7 +592,11 @@ async function handleOrderSave() {
                     design_height: 10,
                     custom_requirements: "Test order from debug button"
                 }
-            ]
+            ],
+            subtotal: 50.00,
+            tax: 9.00,
+            total: 59.00,
+            shipping_address: {}
         };
 
         try {
