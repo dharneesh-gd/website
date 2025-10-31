@@ -4,29 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - Fine Graphics</title>
-  <script>
-  // Force desktop view dynamically on all phones
-  if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    const viewport = document.querySelector("meta[name=viewport]");
-    const desktopWidth = 1366; // typical desktop width
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    // Get device screen width in CSS pixels
-    const deviceWidth = window.innerWidth;
+<div id="cookie-banner" style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #222;
+  color: white;
+  text-align: center;
+  padding: 12px;
+  font-family: sans-serif;
+  z-index: 9999;
+">
+  This site uses cookies to enhance your experience. 
+  <button id="acceptCookies" style="
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-left: 8px;
+    cursor: pointer;
+  ">Accept</button>
+</div>
 
-    // Calculate scale factor to simulate desktop
-    const scale = deviceWidth / desktopWidth;
+<script>
+function setDesktopView() {
+  const viewport = document.querySelector("meta[name=viewport]");
+  const desktopWidth = 1366;
+  const deviceWidth = window.innerWidth;
+  const scale = deviceWidth / desktopWidth;
+  viewport.setAttribute(
+    "content",
+    `width=${desktopWidth}, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`
+  );
+  document.documentElement.style.minWidth = desktopWidth + "px";
+  document.body.style.overflowX = "auto";
+}
 
-    // Apply desktop-scale viewport
-    viewport.setAttribute(
-      "content",
-      `width=${desktopWidth}, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`
-    );
+// Only apply if on mobile
+if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  const banner = document.getElementById("cookie-banner");
+  const acceptBtn = document.getElementById("acceptCookies");
 
-    // Optional: prevent horizontal collapse
-    document.documentElement.style.minWidth = desktopWidth + "px";
-    document.body.style.overflowX = "auto";
+  if (localStorage.getItem("desktopViewEnabled") === "true") {
+    setDesktopView();
+    banner.style.display = "none";
   }
+
+  acceptBtn.addEventListener("click", () => {
+    localStorage.setItem("desktopViewEnabled", "true");
+    banner.style.display = "none";
+    setDesktopView();
+    location.reload(); // optional, ensures layout updates
+  });
+}
 </script>
+
   <style>
     * {
       margin: 0;
@@ -1387,90 +1423,90 @@
   </div>
 
   <!-- Add/Edit Design Modal -->
-  <div id="designModal" class="modal">
-    <div class="modal-content" style="max-width: 700px;">
-      <div class="modal-header">
-        <h3 id="designModalTitle">🎨 Add New Design</h3>
-        <button class="close-btn" onclick="closeModal('designModal')">&times;</button>
-      </div>
-      <div id="designModalContent">
-        <form id="designForm" onsubmit="saveDesign(event)">
-          <div style="display: grid; gap: 20px;">
-            <!-- Basic Information -->
-            <div class="form-group">
-              <label for="designName">Design Name *</label>
-              <input type="text" id="designName" class="form-control" required>
-            </div>
-            
-            <!-- In the designModal section, replace the price input with: -->    
-            <div class="form-group">
-              <label for="designDescription">Description *</label>
-              <textarea id="designDescription" class="form-control" rows="3" placeholder="Describe the design..." required></textarea>
-            </div>
-            
-            <!-- Single Image Upload -->
-            <div class="form-group">
-              <label>Main Design Image *</label>
-              <div class="multiple-image-upload">
-                <input type="file" id="designImages" class="form-control" accept="image/*" onchange="handleImageSelection(this)" required>
-                <small style="color: #666;">Select the main image for the design card.</small>
-                
-                <div id="imagePreviewContainer" class="image-preview-container">
-                  <!-- Main image preview will be added here -->
-                </div>
+ <!-- Add/Edit Design Modal -->
+<div id="designModal" class="modal">
+  <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-header">
+      <h3 id="designModalTitle">🎨 Add New Design</h3>
+      <button class="close-btn" onclick="closeModal('designModal')">&times;</button>
+    </div>
+    <div id="designModalContent">
+      <form id="designForm" onsubmit="saveDesign(event)">
+        <div style="display: grid; gap: 20px;">
+          <!-- Basic Information -->
+          <div class="form-group">
+            <label for="designName">Design Name *</label>
+            <input type="text" id="designName" class="form-control" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="designDescription">Description *</label>
+            <textarea id="designDescription" class="form-control" rows="3" placeholder="Describe the design..." required></textarea>
+          </div>
+          
+          <!-- Single Image Upload -->
+          <div class="form-group">
+            <label>Main Design Image *</label>
+            <div class="multiple-image-upload">
+              <input type="file" id="designImages" class="form-control" accept="image/*" onchange="handleImageSelection(this)" required>
+              <small style="color: #666;">Select the main image for the design card.</small>
+              
+              <div id="imagePreviewContainer" class="image-preview-container">
+                <!-- Main image preview will be added here -->
               </div>
-            </div>
-
-            <!-- Preview Images Section -->
-            <div class="form-group">
-              <label>Preview Images (Optional)</label>
-              <div class="multiple-image-upload">
-                <input type="file" id="previewImages" class="form-control" accept="image/*" multiple onchange="handlePreviewImageSelection(this)">
-                <small style="color: #666;">Add multiple preview images for customers to view. These will be shown in a gallery.</small>
-                
-                <button type="button" class="nav-btn" onclick="clearAllPreviewImages()" 
-                        style="background: #dc3545; margin-top: 5px; padding: 5px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
-                  🗑️ Clear All Preview Images
-                </button>
-                
-                <div id="previewImagesContainer" class="image-preview-container">
-                  <!-- Preview images will be loaded here -->
-                </div>
-              </div>
-            </div>
-            
-            <!-- Tags Input -->
-            <div class="form-group">
-              <label for="designTags">Tags</label>
-              <div class="tags-input-container">
-                <div id="tagsContainer">
-                  <!-- Tags will be added here -->
-                </div>
-                <input 
-                  type="text" 
-                  id="designTagsInput" 
-                  class="tags-input" 
-                  placeholder="Type tag and press Enter..."
-                  onkeydown="handleTagInput(event)"
-                >
-              </div>
-              <small style="color: #666;">Add tags for search (e.g., modern, business, wedding)</small>
-            </div>
-            
-            <!-- Form Actions -->
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid #e9ecef; padding-top: 20px;">
-              <button type="button" class="nav-btn" onclick="closeModal('designModal')" style="background: #6c757d;">
-                Cancel
-              </button>
-              <button type="submit" class="nav-btn" style="background: #28a745;">
-                💾 Save Design
-              </button>
             </div>
           </div>
-        </form>
-      </div>
+
+          <!-- Preview Images Section -->
+          <div class="form-group">
+            <label>Preview Images (Optional)</label>
+            <div class="multiple-image-upload">
+              <input type="file" id="previewImages" class="form-control" accept="image/*" multiple onchange="handlePreviewImageSelection(this)">
+              <small style="color: #666;">Add multiple preview images for customers to view. These will be shown in a gallery.</small>
+              
+              <button type="button" class="nav-btn" onclick="clearAllPreviewImages()" 
+                      style="background: #dc3545; margin-top: 5px; padding: 5px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                🗑️ Clear All Preview Images
+              </button>
+              
+              <div id="previewImagesContainer" class="image-preview-container">
+                <!-- Preview images will be loaded here -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tags Input -->
+          <div class="form-group">
+            <label for="designTags">Tags</label>
+            <div class="tags-input-container">
+              <div id="tagsContainer">
+                <!-- Tags will be added here -->
+              </div>
+              <input 
+                type="text" 
+                id="designTagsInput" 
+                class="tags-input" 
+                placeholder="Type tag and press Enter..."
+                onkeydown="handleTagInput(event)"
+              >
+            </div>
+            <small style="color: #666;">Add tags for search (e.g., modern, business, wedding)</small>
+          </div>
+          
+          <!-- Form Actions -->
+          <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid #e9ecef; padding-top: 20px;">
+            <button type="button" class="nav-btn" onclick="closeModal('designModal')" style="background: #6c757d;">
+              Cancel
+            </button>
+            <button type="submit" class="nav-btn" style="background: #28a745;">
+              💾 Save Design
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
+</div>
 
   <!-- Full Screen Image View Modal -->
   <div id="imageViewModal" class="modal full-image-modal">
@@ -2155,26 +2191,200 @@ function updatePreviewImagesDisplay() {
     }
 
     // Show Add Design Modal
-    function showAddDesignModal() {
-      currentEditingDesignId = null;
-      selectedImages = [];
-      selectedPreviewImages = [];
-      designTags = [];
-      
-      // Reset form
-      document.getElementById('designForm').reset();
-      document.getElementById('designModalTitle').textContent = '🎨 Add New Design';
-      document.getElementById('tagsContainer').innerHTML = '';
-      document.getElementById('calculatedPriceDisplay').textContent = '₹0';
-      document.getElementById('calculatedPriceDisplay').style.color = '#dc3545';
-      
-      // Reset image preview
-      updateImagePreviews();
-      updatePreviewImagesDisplay();
-      
-      openModal('designModal');
-    }
+    // Show Add Design Modal - SIMPLIFIED (No pricing)
+function showAddDesignModal() {
+    currentEditingDesignId = null;
+    selectedImages = [];
+    selectedPreviewImages = [];
+    designTags = [];
+    
+    // Reset form
+    document.getElementById('designForm').reset();
+    document.getElementById('designModalTitle').textContent = '🎨 Add New Design';
+    document.getElementById('tagsContainer').innerHTML = '';
+    
+    // Reset image preview
+    updateImagePreviews();
+    updatePreviewImagesDisplay();
+    
+    // Image required for new designs
+    document.getElementById('designImages').required = true;
+    
+    openModal('designModal');
+}
 
+// Edit Design - SIMPLIFIED (No pricing)
+async function editDesign(designId) {
+    try {
+        console.log(`✏️ Loading design for editing: ${designId}`);
+        const response = await fetch('/admin/designs');
+        const result = await response.json();
+
+        if (result.success) {
+            const design = result.designs.find(d => d.id === designId);
+            if (design) {
+                currentEditingDesignId = designId;
+                selectedImages = [];
+                selectedPreviewImages = []; // Reset preview images
+                designTags = design.tags ? design.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+                
+                // Reset deletion flags
+                window.deleteAllPreviews = false;
+                if (window.existingPreviewIdsToDelete) {
+                    window.existingPreviewIdsToDelete = [];
+                }
+                
+                // Update form fields (NO DIMENSIONS OR PRICE)
+                document.getElementById('designModalTitle').textContent = '✏️ Edit Design';
+                document.getElementById('designName').value = design.name || '';
+                document.getElementById('designDescription').value = design.description || '';
+                
+                // Update tags display
+                updateTagsDisplay();
+                
+                // Show existing main image
+                const previewContainer = document.getElementById('imagePreviewContainer');
+                previewContainer.innerHTML = '';
+                
+                if (design.images && design.images.length > 0) {
+                    const image = design.images[0];
+                    previewContainer.innerHTML = `
+                        <div class="image-preview-item">
+                            <img src="data:${image.type};base64,${image.data}" alt="Existing design image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                            <div style="position: absolute; top: -8px; right: -8px; background: #6c757d; color: white; border-radius: 4px; padding: 2px 6px; font-size: 10px;">
+                                Main Image
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Load preview images
+                await loadDesignPreviews(designId);
+                
+                // Image not required for editing
+                document.getElementById('designImages').required = false;
+                
+                openModal('designModal');
+            } else {
+                alert('❌ Design not found');
+            }
+        } else {
+            alert('❌ Error loading design: ' + result.message);
+        }
+    } catch (error) {
+        console.error('💥 Error in editDesign:', error);
+        alert('❌ Error loading design for editing: ' + error.message);
+    }
+}
+
+// Save Design - SIMPLIFIED (No pricing)
+async function saveDesign(event) {
+    event.preventDefault();
+    console.log("💾 Starting design save...");
+    
+    // Get form data (NO DIMENSIONS OR PRICE)
+    const name = document.getElementById('designName').value.trim();
+    const description = document.getElementById('designDescription').value.trim();
+    const tags = designTags.join(',');
+    
+    // Basic validation
+    if (!name || !description) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    if (selectedImages.length === 0 && !currentEditingDesignId) {
+        alert('Please select an image for the design');
+        return;
+    }
+    
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '⏳ Saving...';
+    submitBtn.disabled = true;
+    
+    try {
+        // Prepare image data
+        let imagesData = [];
+        if (selectedImages.length > 0) {
+            const image = selectedImages[0];
+            
+            // Convert to base64 string (remove data URL prefix)
+            const base64Data = image.dataUrl.split(',')[1];
+            
+            imagesData.push({
+                image_data: base64Data,
+                image_type: image.file.type || 'image/jpeg'
+            });
+            
+            console.log("Image prepared:", image.name, "Size:", base64Data.length);
+        }
+        
+        // Create payload (NO DIMENSIONS OR PRICE)
+        const payload = {
+            name: name,
+            description: description,
+            tags: tags,
+            images: imagesData
+        };
+        
+        // Add design ID if we're editing an existing design
+        if (currentEditingDesignId) {
+            payload.id = currentEditingDesignId;
+            
+            // Handle preview images deletion
+            if (window.deleteAllPreviews) {
+                payload.delete_all_previews = true;
+                console.log("🗑️ Marking all previews for deletion");
+            }
+        }
+        
+        console.log("Sending payload to server:", payload);
+        
+        // Send to server
+        const response = await fetch('/admin/save-design', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        console.log("Server response:", result);
+        
+        if (result.success) {
+            const designId = result.design_id || currentEditingDesignId;
+            
+            // Save preview images if we have any AND we're not deleting all
+            if (selectedPreviewImages.length > 0 && !window.deleteAllPreviews) {
+                await savePreviewImages(designId);
+            } else {
+                console.log("ℹ️ No preview images to save or all previews marked for deletion");
+            }
+            
+            // Reset deletion flags
+            window.deleteAllPreviews = false;
+            if (window.existingPreviewIdsToDelete) {
+                window.existingPreviewIdsToDelete = [];
+            }
+            
+            const action = currentEditingDesignId ? 'updated' : 'saved';
+            alert(`✅ Design ${action} successfully!`);
+            closeModal('designModal');
+            loadDesignsData();
+        } else {
+            throw new Error(result.message || 'Failed to save design');
+        }
+        
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('❌ Error: ' + error.message);
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
     // Save Design with Single Image - UPDATED FOR AUTOMATIC PRICING
 // Save Design - UPDATED (No dimensions/price)
 async function saveDesign(event) {
@@ -2545,6 +2755,7 @@ function renderDesignsGrid(designs) {
 
         // In the renderDesignsGrid function, update the design card HTML:
 // In the renderDesignsGrid function, update the design card HTML:
+// In the renderDesignsGrid function, update the design card HTML to remove price:
 designsHTML += `
     <div class="design-card" data-design-id="${design.id}">
         <div class="design-image-container" onclick="viewFullImage('${mainImage}', '${design.name.replace(/'/g, "\\'")}', ${design.id})">

@@ -1075,12 +1075,12 @@ def get_orders(username):
 
 @app.route('/getDesigns')
 def get_designs():
-    """Get all designs for main website - UPDATED WITH DIMENSIONS"""
+    """Get all designs for main website - SIMPLIFIED NO PRICING"""
     try:
         conn = sqlite3.connect(DESIGNS_DB)
         cur = conn.cursor()
         
-        cur.execute("SELECT id, name, price, width, height, tags, description, image_data, image_type FROM designs ORDER BY created_at DESC")
+        cur.execute("SELECT id, name, tags, description, image_data, image_type FROM designs ORDER BY created_at DESC")
         designs = cur.fetchall()
         conn.close()
         
@@ -1089,17 +1089,14 @@ def get_designs():
             design_data = {
                 "id": design[0],
                 "name": design[1],
-                "price": float(design[2]),
-                "width": design[3] or 0,
-                "height": design[4] or 0,
-                "tags": design[5] or "",
-                "description": design[6] or "",
-                "image_data": design[7],
-                "image_type": design[8]
+                "tags": design[2] or "",
+                "description": design[3] or "",
+                "image_data": design[4],
+                "image_type": design[5]
             }
             design_list.append(design_data)
         
-        print(f"🎨 Retrieved {len(design_list)} designs with dimensions for main website")
+        print(f"🎨 Retrieved {len(design_list)} designs for main website (no pricing)")
         return jsonify({"success": True, "designs": design_list})
     except Exception as e:
         print(f"💥 GET DESIGNS ERROR: {str(e)}")
@@ -1107,7 +1104,7 @@ def get_designs():
 
 @app.route('/admin/save-design', methods=['POST'])
 def save_design():
-    """Save or update a design in the designs database - UPDATED FOR AUTOMATIC PRICING"""
+    """Save or update a design in the designs database - SIMPLIFIED NO DIMENSIONS"""
     try:
         data = request.get_json()
         if not data:
@@ -1115,28 +1112,14 @@ def save_design():
 
         design_id = data.get("id")  # This will be None for new designs, present for edits
         name = data.get("name")
-        width = data.get("width")  # NEW: Get width
-        height = data.get("height")  # NEW: Get height
         description = data.get("description")
         tags = data.get("tags", "")
         images = data.get("images", [])
         delete_all_previews = data.get("delete_all_previews", False)
 
-        # Validate required fields - REMOVED PRICE VALIDATION
-        if not name or not width or not height or not description:
-            return jsonify({"success": False, "message": "Missing required fields"}), 400
-
-        # Validate dimensions
-        try:
-            width = int(width)
-            height = int(height)
-            if width <= 0 or height <= 0:
-                return jsonify({"success": False, "message": "Dimensions must be greater than 0"}), 400
-        except (ValueError, TypeError):
-            return jsonify({"success": False, "message": "Invalid dimensions"}), 400
-
-        # Calculate price automatically: width × height × 10
-        price = width * height * 10
+        # Validate required fields - NO DIMENSIONS
+        if not name or not description:
+            return jsonify({"success": False, "message": "Name and description are required"}), 400
 
         # Take only first image (since you allow one)
         image_data = None
@@ -1151,15 +1134,15 @@ def save_design():
         if design_id:
             # UPDATE existing design
             if image_data and image_type:
-                # Update with new image and dimensions
-                cur.execute("""UPDATE designs SET name=?, price=?, width=?, height=?, tags=?, description=?, image_data=?, image_type=?
+                # Update with new image
+                cur.execute("""UPDATE designs SET name=?, tags=?, description=?, image_data=?, image_type=?
                                WHERE id=?""",
-                            (name, price, width, height, tags, description, image_data, image_type, design_id))
+                            (name, tags, description, image_data, image_type, design_id))
             else:
-                # Update without changing image, but with new dimensions
-                cur.execute("""UPDATE designs SET name=?, price=?, width=?, height=?, tags=?, description=?
+                # Update without changing image
+                cur.execute("""UPDATE designs SET name=?, tags=?, description=?
                                WHERE id=?""",
-                            (name, price, width, height, tags, description, design_id))
+                            (name, tags, description, design_id))
             
             # Delete all preview images if requested
             if delete_all_previews:
@@ -1167,34 +1150,34 @@ def save_design():
                 print(f"🗑️ Deleted all preview images for design {design_id}")
             
             message = "Design updated successfully"
-            print(f"✅ Design updated: {name} - {width}cm × {height}cm = ₹{price} (ID: {design_id})")
+            print(f"✅ Design updated: {name} (ID: {design_id})")
         else:
-            # INSERT new design
+            # INSERT new design - Set default price of 0 since it's required by schema
             cur.execute("""INSERT INTO designs (name, price, width, height, tags, description, image_data, image_type)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                        (name, price, width, height, tags, description, image_data, image_type))
+                        (name, 0, 0, 0, tags, description, image_data, image_type))
             design_id = cur.lastrowid
             message = "Design saved successfully"
-            print(f"✅ New design saved: {name} - {width}cm × {height}cm = ₹{price} (ID: {design_id})")
+            print(f"✅ New design saved: {name} (ID: {design_id})")
         
         conn.commit()
         conn.close()
 
-        return jsonify({"success": True, "message": message, "design_id": design_id, "calculated_price": price})
+        return jsonify({"success": True, "message": message, "design_id": design_id})
     except Exception as e:
         print(f"💥 SAVE DESIGN ERROR: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
-
+    
 @app.route('/admin/designs', methods=['GET'])
 def get_all_designs():
-    """Get all designs for admin - WITH DIMENSIONS AND PREVIEW COUNTS"""
+    """Get all designs for admin - SIMPLIFIED NO PRICING"""
     try:
         conn = sqlite3.connect(DESIGNS_DB)
         cur = conn.cursor()
         
-        # Get designs with preview counts and dimensions
+        # Get designs with preview counts
         cur.execute("""
-            SELECT d.id, d.name, d.price, d.width, d.height, d.tags, d.description, d.image_data, d.image_type,
+            SELECT d.id, d.name, d.tags, d.description, d.image_data, d.image_type,
                    COUNT(dp.id) as preview_count
             FROM designs d
             LEFT JOIN design_previews dp ON d.id = dp.design_id
@@ -1209,21 +1192,18 @@ def get_all_designs():
             design_data = {
                 "id": design[0],
                 "name": design[1],
-                "price": float(design[2]),
-                "width": design[3] or 0,
-                "height": design[4] or 0,
-                "tags": design[5] or "",
-                "description": design[6] or "",
+                "tags": design[2] or "",
+                "description": design[3] or "",
                 "images": [{
-                    "data": design[7],
-                    "type": design[8] or "image/jpeg",
+                    "data": design[4],
+                    "type": design[5] or "image/jpeg",
                     "is_primary": True
-                }] if design[7] else [],
-                "preview_count": design[9]  # Add preview count
+                }] if design[4] else [],
+                "preview_count": design[6]  # Add preview count
             }
             design_list.append(design_data)
         
-        print(f"📊 ADMIN: Retrieved {len(design_list)} designs with dimensions and preview counts")
+        print(f"📊 ADMIN: Retrieved {len(design_list)} designs (no pricing)")
         return jsonify({"success": True, "designs": design_list})
     except Exception as e:
         print(f"💥 ADMIN GET DESIGNS ERROR: {str(e)}")

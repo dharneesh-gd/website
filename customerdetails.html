@@ -4,29 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Details - Fine Graphics</title>
-  <script>
-  // Force desktop view dynamically on all phones
-  if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    const viewport = document.querySelector("meta[name=viewport]");
-    const desktopWidth = 1366; // typical desktop width
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    // Get device screen width in CSS pixels
-    const deviceWidth = window.innerWidth;
+<div id="cookie-banner" style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #222;
+  color: white;
+  text-align: center;
+  padding: 12px;
+  font-family: sans-serif;
+  z-index: 9999;
+">
+  This site uses cookies to enhance your experience. 
+  <button id="acceptCookies" style="
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-left: 8px;
+    cursor: pointer;
+  ">Accept</button>
+</div>
 
-    // Calculate scale factor to simulate desktop
-    const scale = deviceWidth / desktopWidth;
+<script>
+function setDesktopView() {
+  const viewport = document.querySelector("meta[name=viewport]");
+  const desktopWidth = 1366;
+  const deviceWidth = window.innerWidth;
+  const scale = deviceWidth / desktopWidth;
+  viewport.setAttribute(
+    "content",
+    `width=${desktopWidth}, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`
+  );
+  document.documentElement.style.minWidth = desktopWidth + "px";
+  document.body.style.overflowX = "auto";
+}
 
-    // Apply desktop-scale viewport
-    viewport.setAttribute(
-      "content",
-      `width=${desktopWidth}, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`
-    );
+// Only apply if on mobile
+if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  const banner = document.getElementById("cookie-banner");
+  const acceptBtn = document.getElementById("acceptCookies");
 
-    // Optional: prevent horizontal collapse
-    document.documentElement.style.minWidth = desktopWidth + "px";
-    document.body.style.overflowX = "auto";
+  if (localStorage.getItem("desktopViewEnabled") === "true") {
+    setDesktopView();
+    banner.style.display = "none";
   }
+
+  acceptBtn.addEventListener("click", () => {
+    localStorage.setItem("desktopViewEnabled", "true");
+    banner.style.display = "none";
+    setDesktopView();
+    location.reload(); // optional, ensures layout updates
+  });
+}
 </script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
