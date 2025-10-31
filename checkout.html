@@ -248,6 +248,22 @@
             font-size: 0.9rem;
         }
 
+        .customization-details {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .customization-details small {
+            display: block;
+            margin-bottom: 0.2rem;
+            color: #555;
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
         .summary-line {
             display: flex;
             justify-content: space-between;
@@ -408,18 +424,18 @@
     <script>
         // Global variables
         let currentUser = null;
-        let cart = [];
+        let selectedItems = [];
 
         // Initialize the application
-        async function initApp() {
-            await checkLoginStatus();
-            await loadCart();
+        function initApp() {
+            checkLoginStatus();
+            loadSelectedItems();
             renderCheckout();
             updateAuthButtons();
         }
 
         // Check if user is logged in
-        async function checkLoginStatus() {
+        function checkLoginStatus() {
             const userData = localStorage.getItem('currentUser');
             if (userData) {
                 currentUser = JSON.parse(userData);
@@ -430,60 +446,48 @@
             }
         }
 
-        // Load cart from database - IMPROVED VERSION
-        async function loadCart() {
+        // Load only selected items from localStorage
+        function loadSelectedItems() {
             try {
                 if (!currentUser) {
                     throw new Error('User not logged in');
                 }
 
-                console.log('🔄 Loading cart for checkout:', currentUser.username);
+                console.log('🔄 Loading selected items for checkout:', currentUser.username);
 
-                // FIRST: Try localStorage (most reliable)
-                const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
-                if (savedCart) {
-                    cart = JSON.parse(savedCart);
-                    console.log('✅ Cart loaded from localStorage:', cart);
+                // Load checkout items from localStorage (set by cart page)
+                const checkoutItems = localStorage.getItem('checkoutItems');
+                
+                if (checkoutItems) {
+                    selectedItems = JSON.parse(checkoutItems);
+                    console.log('✅ Selected items loaded:', selectedItems);
                 } else {
-                    console.log('❌ No cart data in localStorage');
-                }
-
-                // SECOND: Try to sync with database
-                try {
-                    const response = await fetch(`/getUserData/${currentUser.username}`);
-                    const result = await response.json();
-                    
-                    console.log('📦 Database response:', result);
-
-                    if (result.success && result.cart && result.cart.length > 0) {
-                        // If database has cart data, use it (it's more recent)
-                        cart = result.cart;
-                        console.log('✅ Cart loaded from database:', cart);
-                        
-                        // Update localStorage with database data
-                        localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
+                    // Fallback: load from cart and filter selected items
+                    const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+                    if (savedCart) {
+                        const cart = JSON.parse(savedCart);
+                        selectedItems = cart.filter(item => item.selected === true);
+                        console.log('✅ Selected items filtered from cart:', selectedItems);
                     }
-                } catch (dbError) {
-                    console.log('❌ Database load failed, using localStorage data:', dbError);
                 }
 
-                if (cart.length === 0) {
-                    throw new Error('Your cart is empty');
+                if (selectedItems.length === 0) {
+                    throw new Error('No items selected for checkout');
                 }
                 
-                console.log('🎯 Final cart for checkout:', cart);
+                console.log('🎯 Final selected items for checkout:', selectedItems);
                 
             } catch (error) {
-                console.error('Error loading cart:', error);
+                console.error('Error loading selected items:', error);
                 showEmptyCart(error.message);
             }
         }
 
         // Render checkout form
         function renderCheckout() {
-            if (cart.length === 0) return;
+            if (selectedItems.length === 0) return;
 
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const subtotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const tax = subtotal * 0.18; // 18% tax
             const total = subtotal + tax;
 
@@ -533,19 +537,21 @@
                     <h3 class="summary-title">Order Summary</h3>
                     
                     <div class="order-items">
-                        ${cart.map(item => `
+                        ${selectedItems.map(item => `
                             <div class="order-item">
                                 <div class="item-info">
-                                    <img src="${item.image}" alt="${item.name}" class="item-image">
+                                    <img src="${item.image}" alt="${item.name}" class="item-image" 
+                                         onerror="this.src='https://via.placeholder.com/60?text=No+Image'">
                                     <div class="item-details">
                                         <h4>${item.name}</h4>
-                                        <div class="item-price">₹${item.price}</div>
+                                        <div class="item-price">₹${item.price.toFixed(2)}</div>
                                         <div class="item-quantity">Qty: ${item.quantity}</div>
-                                        <!-- ADD CUSTOMIZATION DETAILS -->
-                                        ${item.placement_position ? `<div class="customization-details">
-                                            <small>📍 ${item.design_side.toUpperCase()} - ${item.placement_position}</small>
-                                            ${item.design_width > 0 ? `<small>📏 ${item.design_width}cm × ${item.design_height}cm</small>` : ''}
-                                            ${item.custom_requirements ? `<small>📝 ${item.custom_requirements}</small>` : ''}
+                                        ${item.placement_position ? `
+                                        <div class="customization-details">
+                                            <small><strong>Side:</strong> ${item.design_side || 'Front'}</small>
+                                            <small><strong>Position:</strong> ${item.placement_position}</small>
+                                            ${item.design_width > 0 ? `<small><strong>Size:</strong> ${item.design_width}cm × ${item.design_height}cm</small>` : ''}
+                                            ${item.custom_requirements ? `<small><strong>Requirements:</strong> ${item.custom_requirements}</small>` : ''}
                                         </div>` : ''}
                                     </div>
                                 </div>
@@ -585,27 +591,22 @@
             document.getElementById('checkoutContainer').innerHTML = checkoutHTML;
         }
 
-        // Show empty cart message - IMPROVED
+        // Show empty cart message
         function showEmptyCart(message) {
             document.getElementById('checkoutContainer').innerHTML = `
                 <div class="empty-cart">
                     <h3>${message}</h3>
-                    <p>Please add items to your cart before proceeding to checkout.</p>
+                    <p>Please select items in your cart before proceeding to checkout.</p>
                     <div style="margin-top: 1rem;">
-                        <a href="index.html" class="btn-primary">Browse Designs</a>
-                        <a href="cart.html" class="btn-primary" style="background: #6c757d; margin-left: 1rem;">View Cart</a>
-                    </div>
-                    <div style="margin-top: 1rem;">
-                        <button onclick="debugCartData()" style="background: #ffc107; color: #000; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">
-                            Debug Cart Data
-                        </button>
+                        <a href="cart.html" class="btn-primary">Back to Cart</a>
+                        <a href="index.html" class="btn-primary" style="background: #6c757d; margin-left: 1rem;">Browse Designs</a>
                     </div>
                 </div>
             `;
         }
 
         // Place order - Redirect to payment page
-        async function placeOrder() {
+        function placeOrder() {
             try {
                 const form = document.getElementById('checkoutForm');
                 if (!form.checkValidity()) {
@@ -619,8 +620,8 @@
                     return;
                 }
 
-                if (cart.length === 0) {
-                    alert('Your cart is empty');
+                if (selectedItems.length === 0) {
+                    alert('No items selected for checkout');
                     return;
                 }
 
@@ -634,27 +635,26 @@
                     country: document.getElementById('country').value
                 };
 
+                // Calculate totals
+                const subtotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const tax = subtotal * 0.18;
+                const total = subtotal + tax;
+
                 // Save checkout data to localStorage for payment page
                 const checkoutData = {
-                    items: cart.map(item => ({
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        image: item.image,
-                        placement_position: item.placement_position || '',
-                        design_side: item.design_side || 'front',
-                        design_width: item.design_width || 0,
-                        design_height: item.design_height || 0,
-                        custom_requirements: item.custom_requirements || ''
-                    })),
+                    items: selectedItems,
                     shipping: formData,
-                    subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-                    tax: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 0.18,
-                    total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 1.18
+                    subtotal: subtotal,
+                    tax: tax,
+                    total: total,
+                    timestamp: new Date().toISOString()
                 };
 
                 // Save to localStorage for payment page
                 localStorage.setItem(`checkout_${currentUser.username}`, JSON.stringify(checkoutData));
+
+                // Remove selected items from cart after successful checkout
+                removeSelectedItemsFromCart();
 
                 // Redirect to payment page
                 window.location.href = 'pay.html';
@@ -665,47 +665,19 @@
             }
         }
 
-        // Debug function to check cart data
-        function debugCartData() {
-            console.log('=== CART DEBUG INFO ===');
-            console.log('Current User:', currentUser);
-            console.log('Cart from variable:', cart);
-            
-            // Check localStorage
-            const localCart = localStorage.getItem(`cart_${currentUser.username}`);
-            console.log('Cart from localStorage:', localCart ? JSON.parse(localCart) : 'No localStorage data');
-            
-            // Check database
-            fetch(`/getUserData/${currentUser.username}`)
-                .then(response => response.json())
-                .then(result => {
-                    console.log('Cart from database:', result.cart);
-                })
-                .catch(error => {
-                    console.log('Database fetch error:', error);
-                });
-        }
-
-        // Save cart to database and local storage
-        async function saveCart() {
-            // Save to local storage
-            if (currentUser) {
-                localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
-            }
-            
-            // Sync to database
+        // Remove selected items from cart after checkout
+        function removeSelectedItemsFromCart() {
             try {
-                await fetch('/syncUserData', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: currentUser.username,
-                        cart: cart,
-                        wishlist: [] // Keep existing wishlist
-                    })
-                });
+                const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+                if (savedCart) {
+                    let cart = JSON.parse(savedCart);
+                    // Keep only items that are NOT selected
+                    cart = cart.filter(item => !item.selected);
+                    localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
+                    console.log('✅ Removed selected items from cart');
+                }
             } catch (error) {
-                console.error('Error syncing cart to database:', error);
+                console.error('Error removing items from cart:', error);
             }
         }
 
@@ -733,7 +705,7 @@
         function logout() {
             localStorage.removeItem('currentUser');
             currentUser = null;
-            cart = [];
+            selectedItems = [];
             window.location.href = 'index.html';
         }
 

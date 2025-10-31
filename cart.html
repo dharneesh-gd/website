@@ -4,29 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart - Fine Graphics</title>
-    <script>
-  // Force desktop view dynamically on all phones
-  if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    const viewport = document.querySelector("meta[name=viewport]");
-    const desktopWidth = 1366; // typical desktop width
-
-    // Get device screen width in CSS pixels
-    const deviceWidth = window.innerWidth;
-
-    // Calculate scale factor to simulate desktop
-    const scale = deviceWidth / desktopWidth;
-
-    // Apply desktop-scale viewport
-    viewport.setAttribute(
-      "content",
-      `width=${desktopWidth}, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`
-    );
-
-    // Optional: prevent horizontal collapse
-    document.documentElement.style.minWidth = desktopWidth + "px";
-    document.body.style.overflowX = "auto";
-  }
-</script>
     <style>
         * {
             margin: 0;
@@ -146,25 +123,6 @@
             border: 2px solid #ffd700;
         }
 
-        .cart-badge, .wishlist-badge {
-            position: relative;
-        }
-
-        .badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ff6b6b;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
         /* Cart Section */
         .cart-section {
             max-width: 1200px;
@@ -195,15 +153,33 @@
 
         .cart-item {
             display: grid;
-            grid-template-columns: 100px 1fr auto auto auto;
+            grid-template-columns: 40px 100px 1fr auto auto auto;
             gap: 1rem;
             align-items: center;
             padding: 1.5rem 0;
             border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.3s;
         }
 
         .cart-item:last-child {
             border-bottom: none;
+        }
+
+        .cart-item-select {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .select-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .selected-item {
+            background-color: #f0f8ff;
+            border-left: 4px solid #667eea;
         }
 
         .cart-item-image {
@@ -271,6 +247,41 @@
 
         .remove-btn:hover {
             background: #ff5252;
+        }
+
+        /* Selection Controls */
+        .selection-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .selection-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .select-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .select-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .selection-info {
+            font-size: 1rem;
+            color: #555;
+            font-weight: 500;
         }
 
         /* Cart Summary */
@@ -400,7 +411,7 @@
             }
 
             .cart-item {
-                grid-template-columns: 80px 1fr;
+                grid-template-columns: 30px 80px 1fr;
                 gap: 0.5rem;
             }
 
@@ -418,6 +429,15 @@
             .user-info {
                 flex-direction: column;
                 text-align: center;
+            }
+
+            .selection-controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .selection-buttons {
+                justify-content: center;
             }
         }
     </style>
@@ -487,14 +507,14 @@
     let cart = [];
 
     // Initialize the application
-    async function initApp() {
-        await checkLoginStatus();
-        await loadCart();
+    function initApp() {
+        checkLoginStatus();
+        loadCart();
         updateAuthButtons();
     }
 
     // Check if user is logged in
-    async function checkLoginStatus() {
+    function checkLoginStatus() {
         const userData = localStorage.getItem('currentUser');
         if (userData) {
             currentUser = JSON.parse(userData);
@@ -505,8 +525,8 @@
         }
     }
 
-    // Load cart from database - FIXED VERSION
-    async function loadCart() {
+    // Load cart from localStorage
+    function loadCart() {
         try {
             const cartContainer = document.getElementById('cartItems');
             cartContainer.innerHTML = '<div class="loading">Loading cart...</div>';
@@ -524,32 +544,14 @@
 
             console.log('🔄 Loading cart for user:', currentUser.username);
 
-            // FIRST: Try localStorage (most reliable)
+            // Load from localStorage
             const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
             if (savedCart) {
                 cart = JSON.parse(savedCart);
                 console.log('✅ Cart loaded from localStorage:', cart);
             } else {
                 console.log('❌ No cart data in localStorage');
-            }
-
-            // SECOND: Try to sync with database
-            try {
-                const response = await fetch(`/getUserData/${currentUser.username}`);
-                const result = await response.json();
-                
-                console.log('📦 Database response:', result);
-
-                if (result.success && result.cart && result.cart.length > 0) {
-                    // If database has cart data, use it (it's more recent)
-                    cart = result.cart;
-                    console.log('✅ Cart loaded from database:', cart);
-                    
-                    // Update localStorage with database data
-                    localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
-                }
-            } catch (dbError) {
-                console.log('❌ Database load failed, using localStorage data:', dbError);
+                cart = [];
             }
 
             // Display cart
@@ -583,20 +585,47 @@
     // Render cart items
     function renderCartItems(cartItems) {
         let cartHTML = '';
-        let subtotal = 0;
+        
+        if (cartItems.length > 0) {
+            cartHTML = `
+                <div class="selection-controls">
+                    <div class="selection-buttons">
+                        <button class="select-btn" onclick="selectAllItems()">Select All</button>
+                        <button class="select-btn" onclick="deselectAllItems()">Deselect All</button>
+                    </div>
+                    <div class="selection-info" id="selectionInfo">
+                        No items selected
+                    </div>
+                </div>
+            `;
+        }
+        
+        let selectedCount = 0;
 
         for (const item of cartItems) {
             const itemTotal = item.price * item.quantity;
-            subtotal += itemTotal;
+            
+            // Initialize selected property if not exists
+            if (item.selected === undefined) {
+                item.selected = false;
+            }
+            
+            if (item.selected) {
+                selectedCount++;
+            }
 
             cartHTML += `
-                <div class="cart-item">
+                <div class="cart-item ${item.selected ? 'selected-item' : ''}" id="cart-item-${item.name.replace(/[^a-zA-Z0-9]/g, '-')}">
+                    <div class="cart-item-select">
+                        <input type="checkbox" class="select-checkbox" 
+                               onchange="toggleItemSelection('${item.name.replace(/'/g, "\\'")}')"
+                               ${item.selected ? 'checked' : ''}>
+                    </div>
                     <img src="${item.image}" alt="${item.name}" class="cart-item-image" 
                          onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
                     <div class="cart-item-details">
                         <h4 class="cart-item-name">${item.name}</h4>
-                        <p class="cart-item-price">₹${item.price}</p>
-                        <!-- CUSTOMIZATION DETAILS -->
+                        <p class="cart-item-price">₹${item.price.toFixed(2)}</p>
                         ${item.placement_position ? `
                         <div class="customization-details">
                             <small><strong>Side:</strong> ${item.design_side || 'Front'}</small>
@@ -620,37 +649,89 @@
         }
 
         document.getElementById('cartItems').innerHTML = cartHTML;
+        updateSelectionInfo(selectedCount, cartItems.length);
         updateCartSummary();
     }
 
-    // Save cart to database and localStorage
-    async function saveCart() {
-        // Save to local storage FIRST (most reliable)
+    // Toggle item selection
+    function toggleItemSelection(designName) {
+        const item = cart.find(item => item.name === designName);
+        if (item) {
+            item.selected = !item.selected;
+            
+            // Update UI to show selected state
+            updateItemSelectionUI();
+            updateCartSummary();
+            saveCart();
+        }
+    }
+
+    // Update UI for selected items
+    function updateItemSelectionUI() {
+        let selectedCount = 0;
+        
+        cart.forEach(item => {
+            const itemElement = document.getElementById(`cart-item-${item.name.replace(/[^a-zA-Z0-9]/g, '-')}`);
+            if (itemElement) {
+                const checkbox = itemElement.querySelector('.select-checkbox');
+                if (item.selected) {
+                    itemElement.classList.add('selected-item');
+                    if (checkbox) checkbox.checked = true;
+                    selectedCount++;
+                } else {
+                    itemElement.classList.remove('selected-item');
+                    if (checkbox) checkbox.checked = false;
+                }
+            }
+        });
+        
+        updateSelectionInfo(selectedCount, cart.length);
+    }
+
+    // Update selection info text
+    function updateSelectionInfo(selectedCount, totalCount) {
+        const selectionInfo = document.getElementById('selectionInfo');
+        if (!selectionInfo) return;
+        
+        if (selectedCount === 0) {
+            selectionInfo.textContent = 'No items selected';
+        } else if (selectedCount === totalCount) {
+            selectionInfo.textContent = 'All items selected';
+        } else {
+            selectionInfo.textContent = `${selectedCount} of ${totalCount} items selected`;
+        }
+    }
+
+    // Select all items
+    function selectAllItems() {
+        cart.forEach(item => {
+            item.selected = true;
+        });
+        updateItemSelectionUI();
+        updateCartSummary();
+        saveCart();
+    }
+
+    // Deselect all items
+    function deselectAllItems() {
+        cart.forEach(item => {
+            item.selected = false;
+        });
+        updateItemSelectionUI();
+        updateCartSummary();
+        saveCart();
+    }
+
+    // Save cart to localStorage
+    function saveCart() {
         if (currentUser) {
             localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
-        }
-        
-        // THEN sync to database
-        try {
-            const response = await fetch('/syncUserData', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: currentUser.username,
-                    cart: cart,
-                    wishlist: null
-                })
-            });
-            
-            const result = await response.json();
-            console.log("✅ Cart saved to database:", result);
-        } catch (error) {
-            console.error('Error syncing cart to database:', error);
+            console.log("✅ Cart saved to localStorage");
         }
     }
 
     // Update quantity of cart item
-    async function updateQuantity(designName, change) {
+    function updateQuantity(designName, change) {
         const item = cart.find(item => item.name === designName);
         if (item) {
             item.quantity += change;
@@ -660,21 +741,22 @@
                 return;
             }
             
-            await saveCart();
-            await loadCart();
+            saveCart();
+            loadCart();
         }
     }
 
     // Remove item from cart
-    async function removeFromCart(designName) {
+    function removeFromCart(designName) {
         cart = cart.filter(item => item.name !== designName);
-        await saveCart();
-        await loadCart();
+        saveCart();
+        loadCart();
     }
 
     // Update cart summary
     function updateCartSummary() {
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const selectedCartItems = cart.filter(item => item.selected);
+        const subtotal = selectedCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const tax = subtotal * 0.18; // 18% tax
         const total = subtotal + tax;
 
@@ -682,17 +764,22 @@
         document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
         document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
 
-        // Enable/disable checkout button
+        // Enable/disable checkout button based on selected items
         const checkoutBtn = document.getElementById('checkoutBtn');
-        checkoutBtn.disabled = cart.length === 0;
+        checkoutBtn.disabled = selectedCartItems.length === 0;
     }
 
     // Proceed to checkout
     function proceedToCheckout() {
-        if (cart.length === 0) {
-            alert('Your cart is empty');
+        const selectedCartItems = cart.filter(item => item.selected);
+        
+        if (selectedCartItems.length === 0) {
+            alert('Please select at least one item to checkout');
             return;
         }
+        
+        // Save selected items to localStorage for checkout page
+        localStorage.setItem('checkoutItems', JSON.stringify(selectedCartItems));
         window.location.href = 'checkout.html';
     }
 
@@ -706,9 +793,6 @@
                     <img src="${currentUser.profile_pic || 'https://via.placeholder.com/40'}" 
                          alt="Profile" class="user-avatar">
                     <span class="user-name">${currentUser.username}</span>
-                    <div class="wishlist-badge">
-                        <a href="wishlist.html" style="color: white; text-decoration: none;">❤️ Wishlist</a>
-                    </div>
                     <button class="btn btn-login" onclick="logout()">Logout</button>
                 </div>
             `;
@@ -730,6 +814,6 @@
 
     // Initialize the app when page loads
     document.addEventListener('DOMContentLoaded', initApp);
-</script>
+    </script>
 </body>
 </html>

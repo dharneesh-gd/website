@@ -445,121 +445,136 @@
       }, 1000);
     }
 
-    // Handle order confirmation - WORKING VERSION
-    // ✅ FINAL FIXED handleOrderSave FUNCTION
-async function handleOrderSave() {
-    try {
-        console.log("🟢 handleOrderSave() triggered");
+    // Handle order confirmation - FIXED VERSION
+    async function handleOrderSave() {
+        try {
+            console.log("🟢 handleOrderSave() triggered");
 
-        if (!checkout || !currentUser) {
-            showError("No order data found. Please try again.");
-            console.log("❌ Missing checkout or user data");
-            return;
-        }
+            if (!checkout || !currentUser) {
+                showError("No order data found. Please try again.");
+                console.log("❌ Missing checkout or user data");
+                return;
+            }
 
-        const username = currentUser.username || currentUser.email;
-        const paidBtn = document.getElementById("paidBtn");
-        const successBox = document.getElementById("successBox");
+            const username = currentUser.username || currentUser.email;
+            const paidBtn = document.getElementById("paidBtn");
+            const successBox = document.getElementById("successBox");
 
-        paidBtn.disabled = true;
-        paidBtn.textContent = "💾 Saving Order...";
+            paidBtn.disabled = true;
+            paidBtn.textContent = "💾 Saving Order...";
 
-        // Build the order data
-        const orderData = {
-            username: username,
-            items: checkout.items.map(item => ({
-                name: item.name,
-                price: parseFloat(item.price) || 0,
-                quantity: parseInt(item.quantity) || 1,
-                image: item.image || "",
-                placement_position: item.placement_position || "",
-                design_side: item.design_side || "front",
-                design_width: parseInt(item.design_width) || 0,
-                design_height: parseInt(item.design_height) || 0,
-                custom_requirements: item.custom_requirements || ""
-            })),
-            subtotal: subtotal,
-            tax: tax,
-            total: total
-        };
+            // Build the order data
+            const orderData = {
+                username: username,
+                items: checkout.items.map(item => ({
+                    name: item.name,
+                    price: parseFloat(item.price) || 0,
+                    quantity: parseInt(item.quantity) || 1,
+                    image: item.image || "",
+                    placement_position: item.placement_position || "",
+                    design_side: item.design_side || "front",
+                    design_width: parseInt(item.design_width) || 0,
+                    design_height: parseInt(item.design_height) || 0,
+                    custom_requirements: item.custom_requirements || ""
+                })),
+                subtotal: subtotal,
+                tax: tax,
+                total: total,
+                shipping: checkout.shipping || {},
+                orderDate: new Date().toISOString(),
+                status: "confirmed"
+            };
 
-        console.log("📦 Sending order to backend:", orderData);
+            console.log("📦 Sending order to backend:", orderData);
 
-        const response = await fetch("/saveOrder", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(orderData)
-        });
+            // Remove purchased items from cart FIRST
+            await removePurchasedItemsFromCart();
 
-        console.log("📬 Response status:", response.status);
-        const result = await response.json();
-        console.log("📦 Backend response:", result);
+            const response = await fetch("/saveOrder", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderData)
+            });
 
-        if (result.success) {
-            console.log("✅ Order saved successfully. Showing success message...");
+            console.log("📬 Response status:", response.status);
+            const result = await response.json();
+            console.log("📦 Backend response:", result);
 
-            // Show success box
-            successBox.style.display = "block";
-            successBox.classList.add("success-animation");
+            if (result.success) {
+                console.log("✅ Order saved successfully. Showing success message...");
 
-            // Clear checkout + cart data
-            localStorage.removeItem("checkout_" + username);
-            localStorage.removeItem("cart_" + username);
+                // Show success box
+                successBox.style.display = "block";
+                successBox.classList.add("success-animation");
+                successBox.innerHTML = `
+                    <div class="success-animation">
+                        ✅ <strong>Payment Successful!</strong><br>
+                        📦 Order ID: ${result.orderId || 'N/A'}<br>
+                        🛒 Items removed from cart<br>
+                        🔄 Redirecting to orders page...
+                    </div>
+                `;
 
-            // Redirect after short delay
-            setTimeout(() => {
-                console.log("➡️ Redirecting to orders page...");
-                window.location.href = "orders.html";
-            }, 2000);
-        } else {
-            console.error("❌ Backend returned error:", result.message);
-            showError("Failed to save order: " + (result.message || "Unknown error"));
+                // Clear checkout data
+                localStorage.removeItem("checkout_" + username);
+
+                // Redirect after short delay
+                setTimeout(() => {
+                    console.log("➡️ Redirecting to orders page...");
+                    window.location.href = "orders.html";
+                }, 2000);
+            } else {
+                console.error("❌ Backend returned error:", result.message);
+                showError("Failed to save order: " + (result.message || "Unknown error"));
+                paidBtn.disabled = false;
+                paidBtn.textContent = "✅ I Have Paid - Confirm Order";
+            }
+
+        } catch (error) {
+            console.error("💥 Error during handleOrderSave:", error);
+            showError("Error saving order: " + error.message);
+            const paidBtn = document.getElementById("paidBtn");
             paidBtn.disabled = false;
             paidBtn.textContent = "✅ I Have Paid - Confirm Order";
         }
-
-    } catch (error) {
-        console.error("💥 Error during handleOrderSave:", error);
-        showError("Error saving order: " + error.message);
-        const paidBtn = document.getElementById("paidBtn");
-        paidBtn.disabled = false;
-        paidBtn.textContent = "✅ I Have Paid - Confirm Order";
     }
-}
 
+    // Remove purchased items from cart
+    async function removePurchasedItemsFromCart() {
+        try {
+            if (!currentUser || !checkout || !checkout.items) {
+                console.log("❌ Cannot remove items: missing data");
+                return;
+            }
 
-    // Show success message
-    function showSuccess(orderId, usedFallback = false) {
-        const successBox = document.getElementById("successBox");
-        
-        if (usedFallback) {
-            successBox.innerHTML = `
-                <div class="success-animation">
-                    ⚠️ <strong>Order Saved Locally</strong><br>
-                    📦 Order ID: ${orderId}<br>
-                    💾 Saved to device (database connection failed)<br>
-                    🔄 Redirecting to orders page...
-                </div>
-            `;
-        } else {
-            successBox.innerHTML = `
-                <div class="success-animation">
-                    ✅ <strong>Payment Successful!</strong><br>
-                    📦 Order ID: ${orderId}<br>
-                    💾 Saved to database successfully<br>
-                    🔄 Redirecting to orders page...
-                </div>
-            `;
+            const username = currentUser.username || currentUser.email;
+            const cartKey = `cart_${username}`;
+            const savedCart = localStorage.getItem(cartKey);
+
+            if (!savedCart) {
+                console.log("❌ No cart found to remove items from");
+                return;
+            }
+
+            let cart = JSON.parse(savedCart);
+            const purchasedItemNames = checkout.items.map(item => item.name);
+            
+            console.log("🛒 Cart before removal:", cart);
+            console.log("🗑️ Items to remove:", purchasedItemNames);
+
+            // Remove purchased items from cart
+            const newCart = cart.filter(item => !purchasedItemNames.includes(item.name));
+            
+            console.log("🛒 Cart after removal:", newCart);
+
+            // Save updated cart
+            localStorage.setItem(cartKey, JSON.stringify(newCart));
+            console.log("✅ Successfully removed purchased items from cart");
+
+        } catch (error) {
+            console.error("❌ Error removing items from cart:", error);
+            throw error;
         }
-        
-        successBox.style.display = "block";
-        document.getElementById("payBtn").style.display = "none";
-        document.getElementById("paidBtn").style.display = "none";
-        document.getElementById("qrcode").style.display = "none";
-        
-        setTimeout(() => {
-            window.location.href = "orders.html";
-        }, 3000);
     }
 
     // Show error message
