@@ -248,7 +248,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    // Get current user from localStorage
+    // Global variables
     let currentUser = null;
     let checkout = null;
     let subtotal = 0;
@@ -256,7 +256,7 @@
     let total = 0;
 
     // Initialize the payment page
-    function initPayment() {
+    async function initPayment() {
       try {
         console.log("🚀 Initializing payment page...");
         
@@ -312,6 +312,20 @@
       } catch (error) {
         console.error("❌ Initialization error:", error);
         showError("Error loading payment page: " + error.message);
+      }
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      const payBtn = document.getElementById("payBtn");
+      const paidBtn = document.getElementById("paidBtn");
+
+      if (payBtn) {
+        payBtn.addEventListener("click", handlePayment);
+      }
+
+      if (paidBtn) {
+        paidBtn.addEventListener("click", handleOrderSave);
       }
     }
 
@@ -428,133 +442,121 @@
       }, 1000);
     }
 
-    // Handle order confirmation (COMPLETELY FRONTEND - NO BACKEND NEEDED)
-    function handleOrderSave() {
+    // Handle order confirmation - WORKING VERSION
+    // ✅ FINAL FIXED handleOrderSave FUNCTION
+async function handleOrderSave() {
+    try {
+        console.log("🟢 handleOrderSave() triggered");
+
         if (!checkout || !currentUser) {
             showError("No order data found. Please try again.");
+            console.log("❌ Missing checkout or user data");
             return;
         }
 
         const username = currentUser.username || currentUser.email;
         const paidBtn = document.getElementById("paidBtn");
-        
-        console.log("💾 Saving order for user:", username);
-        
-        // Disable button to prevent multiple clicks
+        const successBox = document.getElementById("successBox");
+
         paidBtn.disabled = true;
-        paidBtn.textContent = "💾 Saving Your Order...";
+        paidBtn.textContent = "💾 Saving Order...";
 
-        try {
-            // Generate unique order ID
-            const orderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            
-            // Prepare order data
-            const orderData = {
-                order_id: orderId,
-                username: username,
-                items: checkout.items.map(item => ({
-                    name: item.name || 'Unknown Design',
-                    price: parseFloat(item.price) || 0,
-                    quantity: parseInt(item.quantity) || 1,
-                    image: item.image || 'https://via.placeholder.com/80',
-                    placement_position: item.placement_position || '',
-                    design_side: item.design_side || 'front',
-                    design_width: parseInt(item.design_width) || 0,
-                    design_height: parseInt(item.design_height) || 0,
-                    custom_requirements: item.custom_requirements || ''
-                })),
-                subtotal: subtotal,
-                tax: tax,
-                total: total,
-                shipping_address: checkout.shipping || {},
-                status: 'confirmed',
-                payment_status: 'paid',
-                order_date: new Date().toISOString(),
-                timestamp: Date.now()
-            };
+        // Build the order data
+        const orderData = {
+            username: username,
+            items: checkout.items.map(item => ({
+                name: item.name,
+                price: parseFloat(item.price) || 0,
+                quantity: parseInt(item.quantity) || 1,
+                image: item.image || "",
+                placement_position: item.placement_position || "",
+                design_side: item.design_side || "front",
+                design_width: parseInt(item.design_width) || 0,
+                design_height: parseInt(item.design_height) || 0,
+                custom_requirements: item.custom_requirements || ""
+            })),
+            subtotal: subtotal,
+            tax: tax,
+            total: total
+        };
 
-            console.log("📦 Order data prepared:", orderData);
+        console.log("📦 Sending order to backend:", orderData);
 
-            // Save order to localStorage (COMPLETELY FRONTEND)
-            const userOrdersKey = `user_orders_${username}`;
-            let userOrders = JSON.parse(localStorage.getItem(userOrdersKey) || '[]');
-            
-            // Add new order
-            userOrders.unshift(orderData);
-            localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
-            
-            console.log("✅ Order saved to localStorage");
+        const response = await fetch("/saveOrder", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(orderData)
+        });
 
-            // Also save to all orders list for admin view
-            const allOrdersKey = 'all_orders';
-            let allOrders = JSON.parse(localStorage.getItem(allOrdersKey) || '[]');
-            allOrders.unshift({
-                ...orderData,
-                user_email: currentUser.email,
-                user_fname: currentUser.fname,
-                user_lname: currentUser.lname
-            });
-            localStorage.setItem(allOrdersKey, JSON.stringify(allOrders));
+        console.log("📬 Response status:", response.status);
+        const result = await response.json();
+        console.log("📦 Backend response:", result);
 
-            // Clear checkout and cart data
-            const checkoutKey = "checkout_" + username;
-            localStorage.removeItem(checkoutKey);
-            
-            const cartKey = "cart_" + username;
-            localStorage.removeItem(cartKey);
-            
-            console.log("🧹 Checkout and cart data cleared");
+        if (result.success) {
+            console.log("✅ Order saved successfully. Showing success message...");
 
-            // Show success
-            showSuccess();
+            // Show success box
+            successBox.style.display = "block";
+            successBox.classList.add("success-animation");
 
-        } catch (error) {
-            console.error("❌ Error saving order:", error);
-            showError("Failed to save order: " + error.message);
-            
-            // Re-enable button
+            // Clear checkout + cart data
+            localStorage.removeItem("checkout_" + username);
+            localStorage.removeItem("cart_" + username);
+
+            // Redirect after short delay
+            setTimeout(() => {
+                console.log("➡️ Redirecting to orders page...");
+                window.location.href = "orders.html";
+            }, 2000);
+        } else {
+            console.error("❌ Backend returned error:", result.message);
+            showError("Failed to save order: " + (result.message || "Unknown error"));
             paidBtn.disabled = false;
             paidBtn.textContent = "✅ I Have Paid - Confirm Order";
         }
+
+    } catch (error) {
+        console.error("💥 Error during handleOrderSave:", error);
+        showError("Error saving order: " + error.message);
+        const paidBtn = document.getElementById("paidBtn");
+        paidBtn.disabled = false;
+        paidBtn.textContent = "✅ I Have Paid - Confirm Order";
     }
+}
 
-    // Show success message and redirect
-    function showSuccess() {
-      const successBox = document.getElementById("successBox");
-      successBox.innerHTML = `
-        <div class="success-animation">
-          ✅ <strong>Payment Successful!</strong><br>
-          📦 Your order has been confirmed<br>
-          📧 Order ID: ${'ORD_' + Date.now()}<br>
-          🔄 Redirecting to orders page...
-        </div>
-      `;
-      successBox.style.display = "block";
-      
-      // Hide other elements
-      document.getElementById("payBtn").style.display = "none";
-      document.getElementById("paidBtn").style.display = "none";
-      document.getElementById("qrcode").style.display = "none";
-      
-      console.log("🎉 Order completed successfully, redirecting...");
-      
-      // Redirect to orders page after delay
-      setTimeout(() => {
-        window.location.href = "orders.html";
-      }, 3000);
-    }
 
-    function setupEventListeners() {
-      const payBtn = document.getElementById("payBtn");
-      const paidBtn = document.getElementById("paidBtn");
-
-      if (payBtn) {
-        payBtn.addEventListener("click", handlePayment);
-      }
-
-      if (paidBtn) {
-        paidBtn.addEventListener("click", handleOrderSave);
-      }
+    // Show success message
+    function showSuccess(orderId, usedFallback = false) {
+        const successBox = document.getElementById("successBox");
+        
+        if (usedFallback) {
+            successBox.innerHTML = `
+                <div class="success-animation">
+                    ⚠️ <strong>Order Saved Locally</strong><br>
+                    📦 Order ID: ${orderId}<br>
+                    💾 Saved to device (database connection failed)<br>
+                    🔄 Redirecting to orders page...
+                </div>
+            `;
+        } else {
+            successBox.innerHTML = `
+                <div class="success-animation">
+                    ✅ <strong>Payment Successful!</strong><br>
+                    📦 Order ID: ${orderId}<br>
+                    💾 Saved to database successfully<br>
+                    🔄 Redirecting to orders page...
+                </div>
+            `;
+        }
+        
+        successBox.style.display = "block";
+        document.getElementById("payBtn").style.display = "none";
+        document.getElementById("paidBtn").style.display = "none";
+        document.getElementById("qrcode").style.display = "none";
+        
+        setTimeout(() => {
+            window.location.href = "orders.html";
+        }, 3000);
     }
 
     // Show error message
@@ -576,7 +578,7 @@
 
     // Add some console styling for better debugging
     console.log('%c🎨 Fine Graphics Payment System', 'color: #007bff; font-size: 16px; font-weight: bold;');
-    console.log('%c✅ Frontend-only payment processing active', 'color: #28a745;');
+    console.log('%c✅ Payment processing active', 'color: #28a745;');
   </script>
 </body>
 </html>

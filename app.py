@@ -857,36 +857,34 @@ def get_wishlist(username):
 
 @app.route('/saveOrder', methods=['POST'])
 def save_order():
-    """Save order to separate orders database - IMPROVED VERSION"""
+    """Save order to database (self-contained with column check)"""
     try:
-        data = request.get_json()
-        print(f"📦 ORDER SAVE REQUEST RECEIVED")
-        
+        print("📦 [saveOrder] Request received")
+
+        data = request.get_json(force=True)
+        print(f"🧾 Incoming data: {data}")
+
         if not data:
             return jsonify({"success": False, "message": "No data received"}), 400
-            
+
         username = data.get("username")
         items = data.get("items", [])
-        
-        print(f"👤 Username: {username}")
-        print(f"📦 Items count: {len(items)}")
-        
-        if not username:
-            return jsonify({"success": False, "message": "Username is required"}), 400
-            
-        if not items:
-            return jsonify({"success": False, "message": "No items in order"}), 400
+        subtotal = float(data.get("subtotal", 0))
+        tax = float(data.get("tax", 0))
+        total = float(data.get("total", 0))
 
-        # Generate a unique order ID for grouping
-        import random
-        import time
+        if not username or not items:
+            return jsonify({"success": False, "message": "Invalid order data"}), 400
+
+        import random, time
         order_id = f"ORD{int(time.time())}{random.randint(1000, 9999)}"
         order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+
+        # ✅ Connect to database
         conn = sqlite3.connect(ORDERS_DB)
         cur = conn.cursor()
-        
-        # Ensure orders table exists with all required fields
+
+        # ✅ Ensure the orders table exists
         cur.execute("""
             CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -902,204 +900,181 @@ def save_order():
                 design_height INTEGER DEFAULT 0,
                 custom_requirements TEXT DEFAULT '',
                 order_date TEXT,
-                status TEXT DEFAULT 'Pending',
+                status TEXT DEFAULT 'Ordered',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
-        saved_count = 0
-        errors = []
-        
-        for index, item in enumerate(items):
-            try:
-                print(f"💾 Saving item {index + 1}: {item.get('name')}")
-                
-                # Extract all fields with defaults
-                design_name = item.get('name', 'Unknown Design')
-                price = float(item.get('price', 0))
-                quantity = int(item.get('quantity', 1))
-                image_url = item.get('image', '')
-                placement_position = item.get('placement_position', '')
-                design_side = item.get('design_side', 'front')
-                design_width = int(item.get('design_width', 0))
-                design_height = int(item.get('design_height', 0))
-                custom_requirements = item.get('custom_requirements', '')
-                
-                cur.execute("""INSERT INTO orders 
-                               (order_id, username, design_name, price, quantity, image_url, 
-                                placement_position, design_side, design_width, design_height, custom_requirements,
-                                order_date, status)
-                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                            (order_id,
-                             username, 
-                             design_name, 
-                             price, 
-                             quantity, 
-                             image_url,
-                             placement_position,
-                             design_side,
-                             design_width,
-                             design_height,
-                             custom_requirements,
-                             order_date, 
-                             'Pending'))
-                saved_count += 1
-                print(f"✅ Successfully saved: {design_name}")
-                
-            except Exception as e:
-                error_msg = f"Item {index + 1} ({item.get('name', 'Unknown')}): {str(e)}"
-                errors.append(error_msg)
-                print(f"❌ Failed to save item: {error_msg}")
-                continue
-        
+
+        # ✅ Check if subtotal/tax/total columns exist — add if missing
+        cur.execute("PRAGMA table_info(orders)")
+        columns = [col[1] for col in cur.fetchall()]
+
+        if "subtotal" not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN subtotal REAL DEFAULT 0")
+            print("🧩 Added missing 'subtotal' column")
+
+        if "tax" not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN tax REAL DEFAULT 0")
+            print("🧩 Added missing 'tax' column")
+
+        if "total" not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN total REAL DEFAULT 0")
+            print("🧩 Added missing 'total' column")
+
+        # ✅ Insert order items safely
+        for item in items:
+            cur.execute("""
+                INSERT INTO orders (
+                    order_id, username, design_name, price, quantity, image_url,
+                    placement_position, design_side, design_width, design_height,
+                    custom_requirements, order_date, status, subtotal, tax, total
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                order_id,
+                username,
+                item.get("name", ""),
+                float(item.get("price", 0)),
+                int(item.get("quantity", 1)),
+                item.get("image", ""),
+                item.get("placement_position", ""),
+                item.get("design_side", "front"),
+                int(item.get("design_width", 0)),
+                int(item.get("design_height", 0)),
+                item.get("custom_requirements", ""),
+                order_date,
+                "Ordered",
+                subtotal,
+                tax,
+                total
+            ))
+
         conn.commit()
         conn.close()
 
-        if saved_count > 0:
-            print(f"✅ ORDER SAVED SUCCESSFULLY: {saved_count} items in order {order_id} for {username}")
-            return jsonify({
-                "success": True, 
-                "message": f"Order saved with {saved_count} items", 
-                "order_id": order_id,
-                "saved_count": saved_count,
-                "errors": errors if errors else None
-            })
-        else:
-            print(f"❌ ORDER SAVE FAILED: No items saved for {username}")
-            return jsonify({
-                "success": False, 
-                "message": f"Failed to save any items. Errors: {errors}"
-            }), 500
-        
+        print(f"✅ Order saved successfully for {username} (Order ID: {order_id})")
+
+        return jsonify({
+            "success": True,
+            "message": "Order saved successfully",
+            "order_id": order_id
+        })
+
     except Exception as e:
-        print(f"💥 ORDER SAVE ERROR: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"success": False, "message": f"Error saving order: {str(e)}"}), 500
+        print(f"💥 ERROR saving order: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/getOrders/<username>')
 def get_orders(username):
-    """Get user orders from orders database - HANDLES MISSING COLUMNS"""
+    """Get user orders from orders database - returns grouped orders with correct totals"""
     try:
         print(f"📦 GET ORDERS REQUEST FOR: {username}")
-        
+
         conn = sqlite3.connect(ORDERS_DB)
         cur = conn.cursor()
-        
-        # First check if table exists
+
+        # Ensure table exists
         cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='orders'")
-        table_exists = cur.fetchone()
-        
-        if not table_exists:
+        if not cur.fetchone():
             conn.close()
-            print(f"❌ ORDERS TABLE DOES NOT EXIST IN {ORDERS_DB}")
+            print("❌ Orders table not found")
             return jsonify({"success": True, "orders": []})
-        
-        # Check which columns exist
+
+        # Fetch all rows for this user ordered by created_at (or order_date)
         cur.execute("PRAGMA table_info(orders)")
-        columns_info = cur.fetchall()
-        existing_columns = [col[1] for col in columns_info]
-        print(f"📋 Existing columns in orders table: {existing_columns}")
-        
-        # Build query based on available columns
-        base_columns = ["id", "design_name", "price", "quantity", "image_url", "order_date", "status"]
-        
-        # Add optional columns if they exist
-        optional_columns = ["placement_position", "design_side", "design_width", "design_height", "custom_requirements", "order_id"]
-        selected_columns = base_columns.copy()
-        
-        for col in optional_columns:
-            if col in existing_columns:
-                selected_columns.append(col)
-        
-        # Build the SELECT query
-        select_query = f"SELECT {', '.join(selected_columns)} FROM orders WHERE username=? ORDER BY order_date DESC"
-        print(f"📋 Executing query: {select_query}")
-        
-        cur.execute(select_query, (username,))
-        orders_data = cur.fetchall()
-        
-        # Map column names to their positions
-        column_positions = {}
-        for i, col in enumerate(selected_columns):
-            column_positions[col] = i
-        
-        orders_with_items = []
-        
-        # Group by order_id if it exists, otherwise treat each row as separate order
-        if 'order_id' in existing_columns:
-            # Group by order_id
-            order_groups = {}
-            for row in orders_data:
-                order_id = row[column_positions['order_id']] if 'order_id' in column_positions else f"ORD{row[column_positions['id']]}"
-                
-                if order_id not in order_groups:
-                    order_groups[order_id] = {
-                        'order_id': order_id,
-                        'date': row[column_positions['order_date']] if 'order_date' in column_positions else '',
-                        'status': row[column_positions['status']] if 'status' in column_positions else 'Pending',
-                        'items': [],
-                        'total': 0
-                    }
-                
-                # Add item to order group
-                item_total = (row[column_positions['price']] or 0) * (row[column_positions['quantity']] or 1)
-                order_groups[order_id]['total'] += item_total
-                
-                item_data = {
-                    'name': row[column_positions['design_name']] or 'Unknown Design',
-                    'price': float(row[column_positions['price']] or 0),
-                    'quantity': row[column_positions['quantity']] or 1,
-                    'image': row[column_positions['image_url']] or 'https://via.placeholder.com/80?text=No+Image'
-                }
-                
-                # Add optional fields if they exist
-                if 'placement_position' in column_positions:
-                    item_data['placement_position'] = row[column_positions['placement_position']] or ''
-                if 'design_side' in column_positions:
-                    item_data['design_side'] = row[column_positions['design_side']] or 'front'
-                if 'design_width' in column_positions:
-                    item_data['design_width'] = row[column_positions['design_width']] or 0
-                if 'design_height' in column_positions:
-                    item_data['design_height'] = row[column_positions['design_height']] or 0
-                if 'custom_requirements' in column_positions:
-                    item_data['custom_requirements'] = row[column_positions['custom_requirements']] or ''
-                
-                order_groups[order_id]['items'].append(item_data)
-            
-            orders_with_items = list(order_groups.values())
-        else:
-            # No order_id - treat each row as separate order
-            for row in orders_data:
-                order_data = {
-                    'order_id': row[column_positions['id']],
-                    'date': row[column_positions['order_date']] if 'order_date' in column_positions else '',
-                    'status': row[column_positions['status']] if 'status' in column_positions else 'Pending',
-                    'total': float((row[column_positions['price']] or 0) * (row[column_positions['quantity']] or 1)),
-                    'items': [{
-                        'name': row[column_positions['design_name']] or 'Unknown Design',
-                        'price': float(row[column_positions['price']] or 0),
-                        'quantity': row[column_positions['quantity']] or 1,
-                        'image': row[column_positions['image_url']] or 'https://via.placeholder.com/80?text=No+Image',
-                        'placement_position': row[column_positions['placement_position']] if 'placement_position' in column_positions else '',
-                        'design_side': row[column_positions['design_side']] if 'design_side' in column_positions else 'front',
-                        'design_width': row[column_positions['design_width']] if 'design_width' in column_positions else 0,
-                        'design_height': row[column_positions['design_height']] if 'design_height' in column_positions else 0,
-                        'custom_requirements': row[column_positions['custom_requirements']] if 'custom_requirements' in column_positions else ''
-                    }]
-                }
-                orders_with_items.append(order_data)
-        
+        cols_info = cur.fetchall()
+        cols = [c[1] for c in cols_info]
+
+        cur.execute("SELECT * FROM orders WHERE username=? ORDER BY order_date DESC, created_at DESC", (username,))
+        rows = cur.fetchall()
         conn.close()
-        
-        print(f"✅ ORDERS RETRIEVED FOR: {username} - {len(orders_with_items)} orders")
-        return jsonify({"success": True, "orders": orders_with_items})
-        
+
+        # Map column name -> index
+        col_index = {c[1]: i for i, c in enumerate(cols_info)}
+
+        # Build grouped orders by order_id (fallback to generated group id)
+        grouped = {}
+        for row in rows:
+            # get order_id if present, else use created_at+id fallback
+            order_id = row[col_index['order_id']] if 'order_id' in col_index and row[col_index['order_id']] else f"ORD_ROW_{row[col_index['id']]}"
+
+            if order_id not in grouped:
+                grouped[order_id] = {
+                    "order_id": order_id,
+                    "date": row[col_index['order_date']] if 'order_date' in col_index else row[col_index['created_at']] if 'created_at' in col_index else "",
+                    "status": row[col_index['status']] if 'status' in col_index else "Pending",
+                    "items": [],
+                    "subtotal": 0.0,
+                    "tax": None,   # keep None to detect missing
+                    "total": None
+                }
+
+            # read fields defensively
+            price = None
+            quantity = None
+            try:
+                price = float(row[col_index['price']]) if 'price' in col_index and row[col_index['price']] is not None else 0.0
+            except:
+                price = 0.0
+            try:
+                quantity = int(row[col_index['quantity']]) if 'quantity' in col_index and row[col_index['quantity']] is not None else 1
+            except:
+                quantity = 1
+
+            item = {
+                "name": row[col_index['design_name']] if 'design_name' in col_index else (row[col_index['id']] if 'id' in col_index else "Item"),
+                "price": price,
+                "quantity": quantity,
+                "image": row[col_index['image_url']] if 'image_url' in col_index else "",
+                "placement_position": row[col_index['placement_position']] if 'placement_position' in col_index else "",
+                "design_side": row[col_index['design_side']] if 'design_side' in col_index else "front",
+                "design_width": row[col_index['design_width']] if 'design_width' in col_index else 0,
+                "design_height": row[col_index['design_height']] if 'design_height' in col_index else 0,
+                "custom_requirements": row[col_index['custom_requirements']] if 'custom_requirements' in col_index else ""
+            }
+
+            grouped[order_id]['items'].append(item)
+            grouped[order_id]['subtotal'] += (price * quantity)
+
+            # if tax/total columns exist and have values, capture last non-null value
+            if 'tax' in col_index and row[col_index['tax']] is not None:
+                try:
+                    grouped[order_id]['tax'] = float(row[col_index['tax']])
+                except:
+                    pass
+            if 'total' in col_index and row[col_index['total']] is not None:
+                try:
+                    grouped[order_id]['total'] = float(row[col_index['total']])
+                except:
+                    pass
+
+        # finalize computed totals (if tax/total were missing, compute)
+        orders_out = []
+        for oid, g in grouped.items():
+            subtotal_val = round(float(g['subtotal'] or 0.0), 2)
+            tax_val = g['tax'] if g['tax'] is not None else round(subtotal_val * 0.18, 2)
+            total_val = g['total'] if g['total'] is not None else round(subtotal_val + tax_val, 2)
+
+            orders_out.append({
+                "order_id": g['order_id'],
+                "date": g['date'],
+                "status": g['status'],
+                "items": g['items'],
+                "subtotal": subtotal_val,
+                "tax": tax_val,
+                "total": total_val
+            })
+
+        # sort by date desc if date exists
+        try:
+            orders_out.sort(key=lambda x: x.get('date') or "", reverse=True)
+        except:
+            pass
+
+        return jsonify({"success": True, "orders": orders_out})
+
     except Exception as e:
-        print(f"💥 GET ORDERS ERROR: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"success": False, "message": f"Error retrieving orders: {str(e)}"}), 500
+        print(f"💥 GET ORDERS ERROR: {e}")
+        return jsonify({"success": False, "orders": [], "message": str(e)}), 500
 
 # ==================== DESIGN ROUTES ====================
 

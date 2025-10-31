@@ -4,26 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fine Graphics - Premium Design Services</title>
-    <script>
-    // Force desktop view only on mobile devices
-    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-    var viewport = document.querySelector("meta[name=viewport]");
-    if (viewport) {
-        var screenWidth = screen.width;
-        
-        if (screenWidth < 768) {
-            // Small phones
-            viewport.setAttribute('content', 'width=480, initial-scale=1.0, user-scalable=yes');
-        } else if (screenWidth < 1024) {
-            // Tablets and large phones
-            viewport.setAttribute('content', 'width=768, initial-scale=1.0, user-scalable=yes');
-        } else {
-            // Larger tablets
-            viewport.setAttribute('content', 'width=1024, initial-scale=1.0, user-scalable=yes');
-        }
-    }
-}
+<script>
+  // Force desktop view dynamically on all phones
+  if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    const viewport = document.querySelector("meta[name=viewport]");
+    const desktopWidth = 1366; // typical desktop width
+
+    // Get device screen width in CSS pixels
+    const deviceWidth = window.innerWidth;
+
+    // Calculate scale factor to simulate desktop
+    const scale = deviceWidth / desktopWidth;
+
+    // Apply desktop-scale viewport
+    viewport.setAttribute(
+      "content",
+      `width=${desktopWidth}, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`
+    );
+
+    // Optional: prevent horizontal collapse
+    document.documentElement.style.minWidth = desktopWidth + "px";
+    document.body.style.overflowX = "auto";
+  }
 </script>
+
     <style>
         /* fix the ui suitable for mobile*/
         * {

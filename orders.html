@@ -526,135 +526,118 @@
         }
 
         // Render orders function - IMPROVED VERSION
-        function renderOrders(orders) {
-            console.log('📦 Orders data for rendering:', orders);
-            
-            if (!orders || orders.length === 0) {
-                showNoOrders();
-                return;
+        // Render orders function - UPDATED WITH GST DISPLAY
+function renderOrders(orders) {
+    console.log('📦 Orders data for rendering:', orders);
+
+    if (!orders || orders.length === 0) {
+        showNoOrders();
+        return;
+    }
+
+    let ordersHTML = '';
+
+    orders.forEach((order, index) => {
+        // date handling
+        let orderDate = 'Recent Order';
+        try {
+            const dateValue = order.date || order.order_date;
+            if (dateValue) {
+                orderDate = new Date(dateValue).toLocaleString('en-IN', {
+                    year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
             }
-
-            let ordersHTML = '';
-            
-            orders.forEach((order, index) => {
-                // Safely handle date
-                let orderDate = 'Unknown Date';
-                try {
-                    if (order.date) {
-                        orderDate = new Date(order.date).toLocaleDateString('en-IN', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        });
-                    } else if (order.order_date) {
-                        orderDate = new Date(order.order_date).toLocaleDateString('en-IN', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        });
-                    }
-                } catch (e) {
-                    orderDate = 'Recent Order';
-                }
-                
-                const statusClass = (order.status || 'pending').toLowerCase().replace(' ', '-');
-                const orderId = order.order_id || order.id || `ORDER-${index + 1}`;
-                const orderTotal = order.total || 0;
-
-                ordersHTML += `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <div class="order-info">
-                                <h4>Order #${orderId}</h4>
-                                <p class="order-date">${orderDate}</p>
-                            </div>
-                            <div class="order-status ${statusClass}">
-                                ${order.status || 'Pending'}
-                            </div>
-                        </div>
-                        
-                        <div class="order-items">
-                `;
-
-                // Handle both grouped orders and individual orders
-                if (order.items && order.items.length > 0) {
-                    // Grouped orders (multiple items per order)
-                    order.items.forEach(item => {
-                        ordersHTML += renderOrderItem(item);
-                    });
-                } else {
-                    // Individual order (single item)
-                    ordersHTML += renderOrderItem(order);
-                }
-
-                ordersHTML += `
-                        </div>
-                        
-                        <div class="order-footer">
-                            <div class="order-total">
-                                Total: ₹${orderTotal.toFixed(2)}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            document.getElementById('ordersContainer').innerHTML = ordersHTML;
+        } catch (e) {
+            console.warn('Date parse failed', e);
         }
 
-        // Render individual order item - REUSABLE FUNCTION
-        function renderOrderItem(item) {
-            const itemName = item.name || item.design_name || 'Unknown Design';
-            const itemPrice = parseFloat(item.price) || 0;
-            const itemQuantity = parseInt(item.quantity) || 1;
-            const itemImage = item.image || item.image_url || 'https://via.placeholder.com/80?text=No+Image';
-            const itemTotal = itemPrice * itemQuantity;
-            
-            // Check for customization fields
-            const hasCustomization = item.placement_position || item.custom_requirements;
-            const designSide = item.design_side || 'front';
-            const designWidth = parseInt(item.design_width) || 0;
-            const designHeight = parseInt(item.design_height) || 0;
-            const customRequirements = item.custom_requirements || '';
-            const placementPosition = item.placement_position || '';
-            
-            let itemHTML = `
-                <div class="order-item">
-                    <img src="${itemImage}" 
-                         alt="${itemName}" 
-                         class="order-item-image"
-                         onerror="this.src='https://via.placeholder.com/80?text=No+Image'">
-                    <div class="order-item-details">
-                        <h5>${itemName}</h5>
-                        <p class="order-price">₹${itemPrice.toFixed(2)}</p>
-                        <p class="order-quantity">Quantity: ${itemQuantity}</p>
-            `;
-            
-            // Add customization details if they exist
-            if (hasCustomization) {
-                itemHTML += `
-                    <div class="customization-details">
-                        ${placementPosition ? `<small>📍 ${designSide.toUpperCase()} - ${placementPosition}</small>` : ''}
-                        ${(designWidth > 0 && designHeight > 0) ? `<small>📏 ${designWidth}cm × ${designHeight}cm</small>` : ''}
-                        ${customRequirements ? `<small>📝 ${customRequirements}</small>` : ''}
+        const statusClass = (order.status || 'pending').toLowerCase().replace(' ', '-');
+        const orderId = order.order_id || order.id || `ORDER-${index + 1}`;
+
+        // ensure numeric
+        const orderSubtotal = Number(order.subtotal) || (order.items || []).reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
+        const orderTax = Number(order.tax) || +(orderSubtotal * 0.18).toFixed(2);
+        const orderTotal = Number(order.total) || +(orderSubtotal + orderTax).toFixed(2);
+
+        ordersHTML += `
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-info">
+                        <h4>Order #${orderId}</h4>
+                        <p class="order-date">${orderDate}</p>
                     </div>
-                `;
-            }
-            
-            itemHTML += `
-                    </div>
-                    <div class="order-item-total">
-                        ₹${itemTotal.toFixed(2)}
+                    <div class="order-status ${statusClass}">${order.status || 'Pending'}</div>
+                </div>
+                <div class="order-items">
+        `;
+
+        if (order.items && order.items.length > 0) {
+            order.items.forEach(item => {
+                ordersHTML += renderOrderItem(item);
+            });
+        } else {
+            ordersHTML += renderOrderItem(order);
+        }
+
+        ordersHTML += `
+                </div>
+                <div class="order-footer">
+                    <div style="text-align: right; width: 100%;">
+                        <div style="margin-bottom:0.5rem; font-size:0.9rem; color:#666;">
+                            <div>Subtotal: ₹${orderSubtotal.toFixed(2)}</div>
+                            <div>GST (18%): ₹${orderTax.toFixed(2)}</div>
+                        </div>
+                        <div class="order-total">Total: ₹${orderTotal.toFixed(2)}</div>
                     </div>
                 </div>
-            `;
-            
-            return itemHTML;
-        }
+            </div>
+        `;
+    });
+
+    document.getElementById('ordersContainer').innerHTML = ordersHTML;
+}
+
+
+// Render individual order item - REUSABLE FUNCTION
+function renderOrderItem(item) {
+    const itemName = item.name || item.design_name || 'Unknown Design';
+    const itemPrice = Number(item.price) || 0;
+    const itemQuantity = Number(item.quantity) || 1;
+    const itemImage = item.image || item.image_url || 'https://via.placeholder.com/80?text=No+Image';
+    const itemTotal = +(itemPrice * itemQuantity);
+
+    // Customization
+    const hasCustomization = (item.placement_position && item.placement_position.trim()) || (item.custom_requirements && item.custom_requirements.trim());
+    const designSide = item.design_side || 'front';
+    const designWidth = Number(item.design_width) || 0;
+    const designHeight = Number(item.design_height) || 0;
+    const customRequirements = item.custom_requirements || '';
+
+    let customizationHtml = '';
+    if (hasCustomization) {
+        customizationHtml = `
+            <div class="customization-details">
+                ${item.placement_position ? `<small>📍 ${(designSide||'front').toUpperCase()} - ${item.placement_position}</small>` : ''}
+                ${(designWidth > 0 && designHeight > 0) ? `<small>📏 ${designWidth}cm × ${designHeight}cm</small>` : ''}
+                ${customRequirements ? `<small>📝 ${customRequirements}</small>` : ''}
+            </div>
+        `;
+    }
+
+    return `
+        <div class="order-item">
+            <img class="order-item-image" src="${itemImage}" alt="${itemName}" onerror="this.src='https://via.placeholder.com/80?text=No+Image'">
+            <div class="order-item-details">
+                <h5>${itemName}</h5>
+                <p>Price: ₹${itemPrice.toFixed(2)}</p>
+                <p>Quantity: ${itemQuantity}</p>
+                ${customizationHtml}
+            </div>
+            <div class="order-item-total">₹${itemTotal.toFixed(2)}</div>
+        </div>
+    `;
+}
 
         // Show login prompt
         function showLoginPrompt() {

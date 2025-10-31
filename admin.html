@@ -2713,329 +2713,346 @@ designsHTML += `
     }
 
     // Load recent orders for dashboard display - ENHANCED WITH CUSTOMIZATION
-    async function loadRecentOrders() {
-      try {
-        const content = document.getElementById('recentOrders');
-        content.innerHTML = '<div class="loading">🔄 Loading recent orders...</div>';
-        
-        const response = await fetch('/admin/orders');
-        const result = await response.json();
+    // Load recent orders for dashboard display - ENHANCED WITH CUSTOMIZATION
+// Load recent orders for dashboard display - ENHANCED WITH CUSTOMIZATION
+async function loadRecentOrders() {
+  try {
+    const content = document.getElementById('recentOrders');
+    content.innerHTML = '<div class="loading">🔄 Loading recent orders...</div>';
+    
+    const response = await fetch('/admin/orders');
+    const result = await response.json();
 
-        if (result.success && result.orders.length > 0) {
-          const recentOrders = result.orders.slice(0, 8); // Show last 8 orders
-          
-          let ordersHTML = `
-            <div style="overflow-x: auto;">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Design</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-          `;
-
-          recentOrders.forEach(order => {
-            const total = (order.price || 0) * (order.quantity || 1);
-            const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString() : 'N/A';
-            
-            // Check for customization
-            const hasCustomization = order.placement_position || 
-                                   order.design_side !== 'front' || 
-                                   order.design_width > 0;
-            
-            ordersHTML += `
+    if (result.success && result.orders.length > 0) {
+      const recentOrders = result.orders.slice(0, 8); // Show last 8 orders
+      
+      let ordersHTML = `
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
               <tr>
-                <td><strong>#${order.id}</strong></td>
-                <td>${order.username || 'Unknown User'}</td>
-                <td>
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <img src="${order.image_url || 'https://via.placeholder.com/40'}" 
-                         alt="${order.design_name}" 
-                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
-                    <div>
-                      <div style="font-weight: bold;">${order.design_name || 'Unknown Design'}</div>
-                      ${hasCustomization ? `
-                        <div style="font-size: 10px; color: #666; margin-top: 2px;">
-                          📍 ${order.placement_position || ''} 
-                          ${order.design_side ? `• ${order.design_side.toUpperCase()}` : ''}
-                          ${order.design_width > 0 ? `• ${order.design_width}cm` : ''}
-                        </div>
-                      ` : ''}
-                    </div>
-                  </div>
-                </td>
-                <td><strong>₹${total.toFixed(2)}</strong></td>
-                <td>${orderDate}</td>
-                <td>
-                  <span class="status-badge status-${order.status?.toLowerCase() || 'pending'}">
-                    ${order.status || 'Pending'}
-                  </span>
-                </td>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Design</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
               </tr>
-            `;
-          });
+            </thead>
+            <tbody>
+      `;
 
-          ordersHTML += `
-                </tbody>
-              </table>
-            </div>
-            <div style="text-align: center; margin-top: 15px;">
-              <button class="nav-btn" onclick="loadSectionData('orders')">📦 View All Orders</button>
-            </div>
-          `;
-
-          content.innerHTML = ordersHTML;
-        } else {
-          content.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #666;">
-              <h3>📭 No Recent Orders</h3>
-              <p>No orders have been placed yet.</p>
-              <button class="nav-btn" onclick="loadOrdersData()" style="margin-top: 10px;">Refresh Orders</button>
-            </div>
-          `;
-        }
-      } catch (error) {
-        console.error('Error loading recent orders:', error);
-        document.getElementById('recentOrders').innerHTML = `
-          <div class="error">
-            <h3>❌ Error Loading Orders</h3>
-            <p>${error.message}</p>
-            <button class="nav-btn" onclick="loadDashboardData()" style="margin-top: 10px;">Try Again</button>
-          </div>
-        `;
-      }
-    }
-
-    // Orders Management - ENHANCED WITH CUSTOMIZATION DETAILS
-    async function loadOrdersData() {
-      try {
-        console.log("📦 Loading orders data...");
-        const container = document.getElementById('ordersTableContainer');
-        container.innerHTML = '<div class="loading">🔄 Loading orders data...</div>';
-
-        const response = await fetch('/admin/orders');
-        const result = await response.json();
-
-        if (result.success) {
-          const orders = result.orders || [];
-          const statusFilter = document.getElementById('statusFilter').value;
-
-          // Filter orders based on status
-          let filteredOrders = orders;
-          if (statusFilter !== 'all') {
-            filteredOrders = orders.filter(order => order.status === statusFilter);
-          }
-
-          console.log(`Found ${orders.length} orders, ${filteredOrders.length} after filtering`);
-
-          // Update summary cards
-          updateOrdersSummary(orders);
-
-          if (filteredOrders.length === 0) {
-            container.innerHTML = `
-              <div style="text-align: center; padding: 60px 20px; color: #666;">
-                <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
-                <h3 style="margin-bottom: 10px; color: #495057;">No Orders Found</h3>
-                <p style="margin-bottom: 20px; color: #6c757d;">No orders match your current filter criteria.</p>
-                <button class="nav-btn" onclick="document.getElementById('statusFilter').value='all'; loadOrdersData();" 
-                        style="background: #007bff;">
-                  📋 Show All Orders
-                </button>
-              </div>
-            `;
-            return;
-          }
-
-          // Build orders table with improved UI - ENHANCED WITH CUSTOMIZATION DETAILS
-          let ordersHTML = `
-            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-              <div>
-                <strong style="color: #495057; font-size: 16px;">📊 Showing ${filteredOrders.length} order(s)</strong>
-              </div>
-              <div style="color: #6c757d; font-size: 14px;">
-                Filtered by: <strong>${statusFilter === 'all' ? 'All Orders' : statusFilter}</strong>
-              </div>
-            </div>
-            <div class="orders-grid" style="display: grid; gap: 20px;">
-          `;
-
-          filteredOrders.forEach(order => {
-            const total = (order.price || 0) * (order.quantity || 1);
-            const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN') : 'N/A';
-            const statusClass = `status-${(order.status || 'pending').toLowerCase()}`;
-            
-            ordersHTML += `
-              <div class="order-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
-                  <!-- Order Image -->
-                  <div style="flex-shrink: 0;">
-                    <img src="${order.image_url || 'https://via.placeholder.com/80'}" 
-                         alt="${order.design_name}" 
-                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef; cursor: pointer;"
-                         onclick="viewFullImage('${order.image_url || 'https://via.placeholder.com/80'}', '${order.design_name.replace(/'/g, "\\'")}')">
-                  </div>
-                  
-                  <!-- Order Details -->
-                  <div style="flex: 1;">
-                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 15px;">
-                      <div>
-                        <h4 style="margin: 0 0 5px 0; color: #343a40; font-size: 16px;">
-                          ${order.design_name || 'Unknown Design'}
-                        </h4>
-                        <p style="margin: 0; color: #6c757d; font-size: 14px;">
-                          👤 <strong>${order.username || 'Unknown Customer'}</strong>
-                        </p>
-                        
-                        <!-- CUSTOMIZATION DETAILS - ALWAYS SHOW -->
-                        <div class="customization-info">
-                          <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 4px;">
-                            🎨 Customization Details
-                          </div>
-                          
-                          <!-- Placement Position & Side -->
-                          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 4px;">
-                            <div style="font-size: 11px; color: #666;">
-                              <strong>Position:</strong> ${order.placement_position || 'Not specified'}
-                            </div>
-                            <div style="font-size: 11px; color: #666;">
-                              <strong>Side:</strong> ${order.design_side ? order.design_side.toUpperCase() : 'FRONT'}
-                            </div>
-                          </div>
-                          
-                          <!-- Size -->
-                          ${(order.design_width > 0 && order.design_height > 0) ? `
-                            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
-                              <strong>Size:</strong> ${order.design_width}cm × ${order.design_height}cm
-                            </div>
-                          ` : ''}
-                          
-                          <!-- Custom Requirements -->
-                          ${order.custom_requirements ? `
-                            <div style="font-size: 11px; color: #666;">
-                              <strong>Requirements:</strong> ${order.custom_requirements}
-                            </div>
-                          ` : `
-                            <div style="font-size: 11px; color: #999; font-style: italic;">
-                              No special requirements
-                            </div>
-                          `}
-                        </div>
-                      </div>
-                      <div style="text-align: right;">
-                        <div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">
-                          ₹${total.toFixed(2)}
-                        </div>
-                        <div style="font-size: 12px; color: #6c757d;">
-                          ${orderDate}
-                        </div>
-                        <div style="font-size: 11px; color: #999; margin-top: 5px;">
-                          Qty: ${order.quantity || 1}
-                        </div>
-                      </div>
+      recentOrders.forEach(order => {
+        const baseAmount = (order.price || 0) * (order.quantity || 1);
+        const gst = baseAmount * 0.18;
+        const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString() : 'N/A';
+        
+        // Check for customization
+        const hasCustomization = order.placement_position || 
+                               order.design_side !== 'front' || 
+                               order.design_width > 0;
+        
+        ordersHTML += `
+          <tr>
+            <td><strong>#${order.id}</strong></td>
+            <td>${order.username || 'Unknown User'}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="${order.image_url || 'https://via.placeholder.com/40'}" 
+                     alt="${order.design_name}" 
+                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                <div>
+                  <div style="font-weight: bold;">${order.design_name || 'Unknown Design'}</div>
+                  ${hasCustomization ? `
+                    <div style="font-size: 10px; color: #666; margin-top: 2px;">
+                      📍 ${order.placement_position || ''} 
+                      ${order.design_side ? `• ${order.design_side.toUpperCase()}` : ''}
+                      ${order.design_width > 0 ? `• ${order.design_width}cm` : ''}
                     </div>
-                    
-                    <!-- Status and Actions -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                      <div style="display: flex; align-items: center; gap: 10px;">
-                        <select class="status-select" onchange="updateOrderStatus(${order.id}, this.value)" 
-                                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 12px;">
-                          <option value="Ordered" ${order.status === 'Ordered' ? 'selected' : ''}>📥 Ordered</option>
-                          <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
-                          <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>🔄 Processing</option>
-                          <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
-                        </select>
-                        <span class="status-badge ${statusClass}" style="font-size: 11px;">
-                          ${order.status || 'Pending'}
-                        </span>
-                      </div>
-                      
-                      <div style="display: flex; gap: 8px;">
-                        <button class="action-btn view-btn" onclick="viewCustomerOrders('${order.username}')" 
-                                style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px;">
-                          👤 View Orders
-                        </button>
-                        <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})" 
-                                style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  ` : ''}
                 </div>
               </div>
-            `;
-          });
+            </td>
+            <td>
+              <strong>₹${baseAmount.toFixed(2)} + ₹${gst.toFixed(2)}</strong>
+              <div style="font-size: 11px; color: #666;">
+                Total: ₹${(baseAmount + gst).toFixed(2)}
+              </div>
+            </td>
+            <td>${orderDate}</td>
+            <td>
+              <span class="status-badge status-${order.status?.toLowerCase() || 'pending'}">
+                ${order.status || 'Pending'}
+              </span>
+            </td>
+          </tr>
+        `;
+      });
 
-          ordersHTML += `</div>`; // Close orders-grid
+      ordersHTML += `
+            </tbody>
+          </table>
+        </div>
+        <div style="text-align: center; margin-top: 15px;">
+          <button class="nav-btn" onclick="loadSectionData('orders')">📦 View All Orders</button>
+        </div>
+      `;
 
-          container.innerHTML = ordersHTML;
-        } else {
-          container.innerHTML = `
-            <div class="error" style="text-align: center; padding: 40px; background: #f8d7da; color: #721c24; border-radius: 8px;">
-              <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
-              <h3 style="margin-bottom: 10px;">Error Loading Orders</h3>
-              <p style="margin-bottom: 20px;">${result.message || 'Unknown error occurred'}</p>
-              <button class="nav-btn" onclick="loadOrdersData()" style="background: #dc3545;">
-                🔄 Try Again
-              </button>
-            </div>
-          `;
-        }
-      } catch (error) {
-        console.error('Orders load error:', error);
-        document.getElementById('ordersTableContainer').innerHTML = `
-          <div class="error" style="text-align: center; padding: 40px; background: #f8d7da; color: #721c24; border-radius: 8px;">
-            <div style="font-size: 48px; margin-bottom: 15px;">🚨</div>
-            <h3 style="margin-bottom: 10px;">Network Error</h3>
-            <p style="margin-bottom: 20px;">Failed to load orders: ${error.message}</p>
-            <button class="nav-btn" onclick="loadOrdersData()" style="background: #dc3545;">
-              🔄 Retry
+      content.innerHTML = ordersHTML;
+    } else {
+      content.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #666;">
+          <h3>📭 No Recent Orders</h3>
+          <p>No orders have been placed yet.</p>
+          <button class="nav-btn" onclick="loadOrdersData()" style="margin-top: 10px;">Refresh Orders</button>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('Error loading recent orders:', error);
+    document.getElementById('recentOrders').innerHTML = `
+      <div class="error">
+        <h3>❌ Error Loading Orders</h3>
+        <p>${error.message}</p>
+        <button class="nav-btn" onclick="loadDashboardData()" style="margin-top: 10px;">Try Again</button>
+      </div>
+    `;
+  }
+}
+
+    // Orders Management - ENHANCED WITH CUSTOMIZATION DETAILS
+async function loadOrdersData() {
+  try {
+    console.log("📦 Loading orders data...");
+    const container = document.getElementById('ordersTableContainer');
+    container.innerHTML = '<div class="loading">🔄 Loading orders data...</div>';
+
+    const response = await fetch('/admin/orders');
+    const result = await response.json();
+
+    if (result.success) {
+      const orders = result.orders || [];
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      // Filter orders based on status
+      let filteredOrders = orders;
+      if (statusFilter !== 'all') {
+        filteredOrders = orders.filter(order => order.status === statusFilter);
+      }
+
+      console.log(`Found ${orders.length} orders, ${filteredOrders.length} after filtering`);
+
+      // Update summary cards
+      updateOrdersSummary(orders);
+
+      if (filteredOrders.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px; color: #666;">
+            <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
+            <h3 style="margin-bottom: 10px; color: #495057;">No Orders Found</h3>
+            <p style="margin-bottom: 20px; color: #6c757d;">No orders match your current filter criteria.</p>
+            <button class="nav-btn" onclick="document.getElementById('statusFilter').value='all'; loadOrdersData();" 
+                    style="background: #007bff;">
+              📋 Show All Orders
             </button>
           </div>
         `;
+        return;
       }
-    }
 
-    // Update orders summary cards
-    function updateOrdersSummary(orders) {
-      const totalOrders = orders.length;
-      const completedOrders = orders.filter(o => o.status === 'Completed').length;
-      const pendingOrders = orders.filter(o => o.status === 'Pending').length;
-      
-      // Calculate total revenue from completed orders
-      const totalRevenue = orders
-        .filter(o => o.status === 'Completed')
-        .reduce((sum, order) => sum + (order.price * (order.quantity || 1)), 0);
+      // Build orders table with improved UI - ENHANCED WITH CUSTOMIZATION DETAILS
+      let ordersHTML = `
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <strong style="color: #495057; font-size: 16px;">📊 Showing ${filteredOrders.length} order(s)</strong>
+          </div>
+          <div style="color: #6c757d; font-size: 14px;">
+            Filtered by: <strong>${statusFilter === 'all' ? 'All Orders' : statusFilter}</strong>
+          </div>
+        </div>
+        <div class="orders-grid" style="display: grid; gap: 20px;">
+      `;
 
-      // Update summary cards
-      const summaryCards = document.querySelector('.orders-summary-cards');
-      if (summaryCards) {
-        summaryCards.innerHTML = `
-          <div class="summary-card" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-            <div class="summary-number" style="font-size: 32px; font-weight: bold;">${totalOrders}</div>
-            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Orders</div>
-          </div>
-          <div class="summary-card" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-            <div class="summary-number" style="font-size: 32px; font-weight: bold;">${completedOrders}</div>
-            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Completed</div>
-          </div>
-          <div class="summary-card" style="background: linear-gradient(135deg, #ffc107, #e0a800); color: black; padding: 20px; border-radius: 10px; text-align: center;">
-            <div class="summary-number" style="font-size: 32px; font-weight: bold;">${pendingOrders}</div>
-            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Pending</div>
-          </div>
-          <div class="summary-card" style="background: linear-gradient(135deg, #6c757d, #545b62); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-            <div class="summary-number" style="font-size: 32px; font-weight: bold;">₹${totalRevenue.toFixed(2)}</div>
-            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Revenue</div>
+      filteredOrders.forEach(order => {
+        const baseAmount = (order.price || 0) * (order.quantity || 1);
+        const gst = baseAmount * 0.18;
+        const total = baseAmount + gst;
+        const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN') : 'N/A';
+        const statusClass = `status-${(order.status || 'pending').toLowerCase()}`;
+        
+        ordersHTML += `
+          <div class="order-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+              <!-- Order Image -->
+              <div style="flex-shrink: 0;">
+                <img src="${order.image_url || 'https://via.placeholder.com/80'}" 
+                     alt="${order.design_name}" 
+                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef; cursor: pointer;"
+                     onclick="viewFullImage('${order.image_url || 'https://via.placeholder.com/80'}', '${order.design_name.replace(/'/g, "\\'")}')">
+              </div>
+              
+              <!-- Order Details -->
+              <div style="flex: 1;">
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 15px;">
+                  <div>
+                    <h4 style="margin: 0 0 5px 0; color: #343a40; font-size: 16px;">
+                      ${order.design_name || 'Unknown Design'}
+                    </h4>
+                    <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                      👤 <strong>${order.username || 'Unknown Customer'}</strong>
+                    </p>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 16px; font-weight: bold; color: #28a745; margin-bottom: 5px;">
+                      ₹${baseAmount.toFixed(2)} + ₹${gst.toFixed(2)}
+                    </div>
+                    <div style="font-size: 14px; color: #495057; font-weight: bold;">
+                      Total: ₹${total.toFixed(2)}
+                    </div>
+                    <div style="font-size: 11px; color: #999; margin-top: 5px;">
+                      Qty: ${order.quantity || 1}
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- CUSTOMIZATION DETAILS - CENTERED -->
+                <div class="customization-info" style="text-align: center; margin: 15px 0;">
+                  <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 8px;">
+                    🎨 Customization Details
+                  </div>
+                  
+                  <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 8px;">
+                    <!-- Placement Position & Side -->
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                      <div style="font-size: 11px; color: #666; background: #f8f9fa; padding: 4px 8px; border-radius: 4px;">
+                        <strong>Position:</strong> ${order.placement_position || 'Not specified'}
+                      </div>
+                      <div style="font-size: 11px; color: #666; background: #f8f9fa; padding: 4px 8px; border-radius: 4px;">
+                        <strong>Side:</strong> ${order.design_side ? order.design_side.toUpperCase() : 'FRONT'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Size -->
+                  ${(order.design_width > 0 && order.design_height > 0) ? `
+                    <div style="font-size: 11px; color: #666; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px;">
+                      <strong>Size:</strong> ${order.design_width}cm × ${order.design_height}cm
+                    </div>
+                  ` : ''}
+                  
+                  <!-- Custom Requirements -->
+                  ${order.custom_requirements ? `
+                    <div style="font-size: 11px; color: #666; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; margin-top: 8px;">
+                      <strong>Requirements:</strong> ${order.custom_requirements}
+                    </div>
+                  ` : `
+                    <div style="font-size: 11px; color: #999; font-style: italic; margin-top: 8px;">
+                      No special requirements
+                    </div>
+                  `}
+                </div>
+                
+                <!-- Status and Actions -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <select class="status-select" onchange="updateOrderStatus(${order.id}, this.value)" 
+                            style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 12px;">
+                      <option value="Ordered" ${order.status === 'Ordered' ? 'selected' : ''}>📥 Ordered</option>
+                      <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                      <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>🔄 Processing</option>
+                      <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
+                    </select>
+                    <span class="status-badge ${statusClass}" style="font-size: 11px;">
+                      ${order.status || 'Pending'}
+                    </span>
+                  </div>
+                  
+                  <div style="display: flex; gap: 8px;">
+                    <button class="action-btn view-btn" onclick="viewCustomerOrders('${order.username}')" 
+                            style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                      👤 View Orders
+                    </button>
+                    <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})" 
+                            style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         `;
-      }
+      });
+
+      ordersHTML += `</div>`; // Close orders-grid
+
+      container.innerHTML = ordersHTML;
+    } else {
+      container.innerHTML = `
+        <div class="error" style="text-align: center; padding: 40px; background: #f8d7da; color: #721c24; border-radius: 8px;">
+          <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+          <h3 style="margin-bottom: 10px;">Error Loading Orders</h3>
+          <p style="margin-bottom: 20px;">${result.message || 'Unknown error occurred'}</p>
+          <button class="nav-btn" onclick="loadOrdersData()" style="background: #dc3545;">
+            🔄 Try Again
+          </button>
+        </div>
+      `;
     }
+  } catch (error) {
+    console.error('Orders load error:', error);
+    document.getElementById('ordersTableContainer').innerHTML = `
+      <div class="error" style="text-align: center; padding: 40px; background: #f8d7da; color: #721c24; border-radius: 8px;">
+        <div style="font-size: 48px; margin-bottom: 15px;">🚨</div>
+        <h3 style="margin-bottom: 10px;">Network Error</h3>
+        <p style="margin-bottom: 20px;">Failed to load orders: ${error.message}</p>
+        <button class="nav-btn" onclick="loadOrdersData()" style="background: #dc3545;">
+          🔄 Retry
+        </button>
+      </div>
+    `;
+  }
+}
+
+    // Update orders summary cards
+   // Update orders summary cards
+function updateOrdersSummary(orders) {
+  const totalOrders = orders.length;
+  const completedOrders = orders.filter(o => o.status === 'Completed').length;
+  const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+  
+  // Calculate total revenue from completed orders with GST
+  const totalRevenue = orders
+    .filter(o => o.status === 'Completed')
+    .reduce((sum, order) => {
+      const baseAmount = order.price * (order.quantity || 1);
+      const gst = baseAmount * 0.18;
+      return sum + baseAmount + gst;
+    }, 0);
+
+  // Update summary cards
+  const summaryCards = document.querySelector('.orders-summary-cards');
+  if (summaryCards) {
+    summaryCards.innerHTML = `
+      <div class="summary-card" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+        <div class="summary-number" style="font-size: 32px; font-weight: bold;">${totalOrders}</div>
+        <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Orders</div>
+      </div>
+      <div class="summary-card" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+        <div class="summary-number" style="font-size: 32px; font-weight: bold;">${completedOrders}</div>
+        <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Completed</div>
+      </div>
+      <div class="summary-card" style="background: linear-gradient(135deg, #ffc107, #e0a800); color: black; padding: 20px; border-radius: 10px; text-align: center;">
+        <div class="summary-number" style="font-size: 32px; font-weight: bold;">${pendingOrders}</div>
+        <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Pending</div>
+      </div>
+      <div class="summary-card" style="background: linear-gradient(135deg, #6c757d, #545b62); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+        <div class="summary-number" style="font-size: 32px; font-weight: bold;">₹${totalRevenue.toFixed(2)}</div>
+        <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Revenue (incl. GST)</div>
+      </div>
+    `;
+  }
+}
 
     // Customer Management
     async function loadCustomersData() {
@@ -3365,6 +3382,8 @@ async function viewCustomerDetails(username) {
 
     // View Customer Orders - REDIRECT TO NEW PAGE
     // Enhanced Customer Orders View with Customization
+// Enhanced Customer Orders View with Customization
+// Enhanced Customer Orders View with Customization
 async function viewCustomerOrders(username) {
     try {
         console.log("📦 Loading customer orders for:", username);
@@ -3403,8 +3422,11 @@ async function viewCustomerOrders(username) {
                                     </p>
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="font-size: 18px; font-weight: bold; color: #28a745;">
-                                        ₹${order.total?.toFixed(2) || '0.00'}
+                                    <div style="font-size: 16px; font-weight: bold; color: #28a745;">
+                                        ₹${order.subtotal?.toFixed(2) || '0.00'} + ₹${order.tax?.toFixed(2) || '0.00'}
+                                    </div>
+                                    <div style="font-size: 14px; color: #495057; font-weight: bold;">
+                                        Total: ₹${order.total?.toFixed(2) || '0.00'}
                                     </div>
                                 </div>
                             </div>
@@ -3414,6 +3436,9 @@ async function viewCustomerOrders(username) {
 
                     // Display each item in the order
                     order.items.forEach(item => {
+                        const baseAmount = item.price * item.quantity;
+                        const gst = baseAmount * 0.18;
+                        
                         ordersHTML += `
                             <div class="order-item" style="display: flex; align-items: flex-start; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 10px; background: #f8f9fa;">
                                 <img src="${item.image || 'https://via.placeholder.com/80'}" 
@@ -3430,7 +3455,7 @@ async function viewCustomerOrders(username) {
                                             <strong>Quantity:</strong> ${item.quantity}
                                         </div>
                                         <div style="font-size: 14px; color: #666;">
-                                            <strong>Subtotal:</strong> ₹${(item.price * item.quantity).toFixed(2)}
+                                            <strong>Amount:</strong> ₹${baseAmount.toFixed(2)} + ₹${gst.toFixed(2)}
                                         </div>
                                     </div>
                                     
