@@ -857,7 +857,7 @@ def get_wishlist(username):
 
 @app.route('/saveOrder', methods=['POST'])
 def save_order():
-    """Save order to database (self-contained with column check)"""
+    """Save order to database, auto-fix missing columns"""
     try:
         print("📦 [saveOrder] Request received")
 
@@ -877,18 +877,16 @@ def save_order():
             return jsonify({"success": False, "message": "Invalid order data"}), 400
 
         import random, time
-        order_id = f"ORD{int(time.time())}{random.randint(1000, 9999)}"
+        order_id = f"ORD{int(time.time())}{random.randint(1000,9999)}"
         order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # ✅ Connect to database
         conn = sqlite3.connect(ORDERS_DB)
         cur = conn.cursor()
 
-        # ✅ Ensure the orders table exists
+        # ✅ Ensure the base table exists
         cur.execute("""
             CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                order_id TEXT,
                 username TEXT,
                 design_name TEXT,
                 price REAL,
@@ -905,23 +903,24 @@ def save_order():
             )
         """)
 
-        # ✅ Check if subtotal/tax/total columns exist — add if missing
+        # ✅ Check for missing columns and add them
         cur.execute("PRAGMA table_info(orders)")
-        columns = [col[1] for col in cur.fetchall()]
+        existing_columns = [c[1] for c in cur.fetchall()]
 
-        if "subtotal" not in columns:
-            cur.execute("ALTER TABLE orders ADD COLUMN subtotal REAL DEFAULT 0")
-            print("🧩 Added missing 'subtotal' column")
+        needed_columns = {
+            "order_id": "TEXT",
+            "subtotal": "REAL DEFAULT 0",
+            "tax": "REAL DEFAULT 0",
+            "total": "REAL DEFAULT 0"
+        }
 
-        if "tax" not in columns:
-            cur.execute("ALTER TABLE orders ADD COLUMN tax REAL DEFAULT 0")
-            print("🧩 Added missing 'tax' column")
+        for col, col_type in needed_columns.items():
+            if col not in existing_columns:
+                alter_sql = f"ALTER TABLE orders ADD COLUMN {col} {col_type}"
+                cur.execute(alter_sql)
+                print(f"🧩 Added missing column '{col}'")
 
-        if "total" not in columns:
-            cur.execute("ALTER TABLE orders ADD COLUMN total REAL DEFAULT 0")
-            print("🧩 Added missing 'total' column")
-
-        # ✅ Insert order items safely
+        # ✅ Insert each item into the table
         for item in items:
             cur.execute("""
                 INSERT INTO orders (
@@ -953,11 +952,7 @@ def save_order():
 
         print(f"✅ Order saved successfully for {username} (Order ID: {order_id})")
 
-        return jsonify({
-            "success": True,
-            "message": "Order saved successfully",
-            "order_id": order_id
-        })
+        return jsonify({"success": True, "message": "Order saved successfully", "order_id": order_id})
 
     except Exception as e:
         print(f"💥 ERROR saving order: {e}")
