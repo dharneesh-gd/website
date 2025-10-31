@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fine Graphics - Premium Design Services</title>
-<!-- Add this to your HTML -->
-<div id="desktopSitePopup" class="modal" style="display: flex;">
+<!-- Desktop Site Enforcer - Add this to EVERY page -->
+<div id="desktopSitePopup" class="modal" style="display: none;">
     <div class="modal-content" style="text-align: center; max-width: 400px;">
         <div class="modal-header">
             <h3>🌐 Desktop Site Required</h3>
@@ -24,19 +24,22 @@
 </div>
 
 <script>
-// Force desktop view on mobile devices
-if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    // Check if user already proceeded
-    if (!localStorage.getItem('desktopProceeded')) {
-        // Show popup after page loads
-        setTimeout(() => {
-            document.getElementById('desktopSitePopup').style.display = 'flex';
-        }, 1000);
-    } else {
-        // Already proceeded - apply desktop view automatically
-        applyDesktopView();
+// Desktop Site Enforcer Script
+document.addEventListener('DOMContentLoaded', function() {
+    // Force desktop view on mobile devices
+    if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // Check if user already proceeded
+        if (!localStorage.getItem('desktopProceeded')) {
+            // Show popup after page loads
+            setTimeout(() => {
+                document.getElementById('desktopSitePopup').style.display = 'flex';
+            }, 1000);
+        } else {
+            // Already proceeded - apply desktop view automatically
+            applyDesktopView();
+        }
     }
-}
+});
 
 function proceedWithDesktop() {
     // Apply desktop view
