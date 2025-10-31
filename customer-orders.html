@@ -4,65 +4,91 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Orders - Fine Graphics Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<div id="cookie-banner" style="
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #222;
-  color: white;
-  text-align: center;
-  padding: 12px;
-  font-family: sans-serif;
-  z-index: 9999;
-">
-  This site uses cookies to enhance your experience. 
-  <button id="acceptCookies" style="
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    margin-left: 8px;
-    cursor: pointer;
-  ">Accept</button>
+  <!-- Add this to your HTML -->
+<div id="desktopSitePopup" class="modal" style="display: flex;">
+    <div class="modal-content" style="text-align: center; max-width: 400px;">
+        <div class="modal-header">
+            <h3>🌐 Desktop Site Required</h3>
+        </div>
+        <div class="modal-body">
+            <p>This website is optimized for <strong>Desktop View</strong> only.</p>
+            <p>Click "Proceed" to continue with the best experience.</p>
+            
+            <div style="margin: 20px 0;">
+                <button onclick="proceedWithDesktop()" class="btn" style="background: #28a745; color: white; padding: 10px 30px; margin: 10px; font-size: 16px;">
+                    ✅ Proceed with Desktop View
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-function setDesktopView() {
-  const viewport = document.querySelector("meta[name=viewport]");
-  const desktopWidth = 1366;
-  const deviceWidth = window.innerWidth;
-  const scale = deviceWidth / desktopWidth;
-  viewport.setAttribute(
-    "content",
-    `width=${desktopWidth}, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`
-  );
-  document.documentElement.style.minWidth = desktopWidth + "px";
-  document.body.style.overflowX = "auto";
+// Force desktop view on mobile devices
+if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    // Check if user already proceeded
+    if (!localStorage.getItem('desktopProceeded')) {
+        // Show popup after page loads
+        setTimeout(() => {
+            document.getElementById('desktopSitePopup').style.display = 'flex';
+        }, 1000);
+    } else {
+        // Already proceeded - apply desktop view automatically
+        applyDesktopView();
+    }
 }
 
-// Only apply if on mobile
-if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-  const banner = document.getElementById("cookie-banner");
-  const acceptBtn = document.getElementById("acceptCookies");
+function proceedWithDesktop() {
+    // Apply desktop view
+    applyDesktopView();
+    
+    // Save that user proceeded
+    localStorage.setItem('desktopProceeded', 'true');
+    
+    // Close popup
+    document.getElementById('desktopSitePopup').style.display = 'none';
+    
+    // Show success message
+    showNotification('Desktop view activated!', 'success');
+}
 
-  if (localStorage.getItem("desktopViewEnabled") === "true") {
-    setDesktopView();
-    banner.style.display = "none";
-  }
+function applyDesktopView() {
+    // Use your existing viewport method
+    const viewport = document.querySelector("meta[name=viewport]");
+    const desktopWidth = 1366;
+    const deviceWidth = window.innerWidth;
+    const scale = deviceWidth / desktopWidth;
 
-  acceptBtn.addEventListener("click", () => {
-    localStorage.setItem("desktopViewEnabled", "true");
-    banner.style.display = "none";
-    setDesktopView();
-    location.reload(); // optional, ensures layout updates
-  });
+    viewport.setAttribute(
+        "content",
+        `width=${desktopWidth}, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`
+    );
+
+    document.documentElement.style.minWidth = desktopWidth + "px";
+    document.body.style.overflowX = "auto";
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 5px;
+        z-index: 10000;
+        font-weight: bold;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
 </script>
-
   <style>
     * {
       margin: 0;
